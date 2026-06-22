@@ -18,7 +18,7 @@ const CustomerDirectory = () => {
   const [customers, setCustomers] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(null); // Tracks ID of currently assessing user
+  const [actionLoading, setActionLoading] = useState(null); 
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
@@ -86,7 +86,7 @@ const CustomerDirectory = () => {
   };
 
   const handleDelete = async (customerId) => {
-    if (!window.confirm('Are you sure you want to permanently delete this customer application profile?')) {
+    if (!window.confirm('Confirm borrower deletion.')) {
       return;
     }
     try {
@@ -94,7 +94,7 @@ const CustomerDirectory = () => {
       loadCustomers();
     } catch (err) {
       console.error(err);
-      alert('Delete failed. Verify permissions.');
+      alert('Action unauthorized.');
     }
   };
 
@@ -132,7 +132,6 @@ const CustomerDirectory = () => {
 
   const handleOpenEditModal = (customer) => {
     setEditingCustomer(customer);
-    // Convert DB models days back to user-friendly values
     const ageY = Math.round(-customer.days_birth / 365.25);
     const isRet = customer.days_employed === 365243;
     const empY = isRet ? 0 : Math.round(-customer.days_employed / 365.25);
@@ -171,7 +170,6 @@ const CustomerDirectory = () => {
     e.preventDefault();
     setError('');
 
-    // Preprocessing transformations back to Home Credit schema formats
     const daysBirth = -Math.round(form.age_years * 365.25);
     const daysEmployed = form.is_retired ? 365243 : -Math.round(form.employment_years * 365.25);
     const carAge = form.flag_own_car === 'Y' && form.own_car_age ? parseFloat(form.own_car_age) : null;
@@ -189,7 +187,6 @@ const CustomerDirectory = () => {
       ext_source_3: ext3,
     };
 
-    // Remove UI-only helper keys
     delete payload.age_years;
     delete payload.employment_years;
     delete payload.is_retired;
@@ -209,53 +206,53 @@ const CustomerDirectory = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6 animate-fadeIn font-mono">
       {/* Title block */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-neutral-900 pb-5">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight font-sans">Credit Borrowers Directory</h1>
-          <p className="text-slate-400 text-sm mt-1">Manage borrower profiles and evaluate credit risk scores.</p>
+          <h1 className="text-2xl font-black text-white uppercase tracking-wider">Borrowers Directory</h1>
+          <p className="text-neutral-500 text-xs mt-1 uppercase tracking-widest">Register, edit, and evaluate credit scorecards</p>
         </div>
         {isAnalyst() && (
-          <button onClick={handleOpenCreateModal} className="btn-primary flex items-center gap-2 self-start sm:self-auto">
-            <Plus className="w-5 h-5" />
+          <button onClick={handleOpenCreateModal} className="btn-primary flex items-center gap-2 self-start sm:self-auto text-xs">
+            <Plus className="w-4 h-4" />
             Add Borrower Profile
           </button>
         )}
       </div>
 
       {/* Search block */}
-      <div className="flex items-center gap-3 bg-brand-panel border border-slate-800 rounded-xl px-4 py-3 max-w-md shadow-inner">
-        <Search className="w-5 h-5 text-slate-500 shrink-0" />
+      <div className="flex items-center gap-3 bg-black border border-neutral-850 rounded-none px-4 py-2.5 max-w-md">
+        <Search className="w-4 h-4 text-neutral-500 shrink-0" />
         <input 
           type="text" 
-          placeholder="Search by name, email or application ID..." 
+          placeholder="SEARCH APPLICATION BY ID OR NAME..." 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-transparent text-slate-200 border-none outline-none placeholder-slate-500 text-sm focus:ring-0"
+          className="w-full bg-transparent text-white border-none outline-none placeholder-neutral-600 text-xs focus:ring-0 uppercase"
         />
       </div>
 
       {error && (
-        <div className="p-4 bg-rose-500/10 border border-rose-500/25 text-rose-400 rounded-xl text-sm flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5" />
+        <div className="p-4 border border-white text-white bg-black text-xs flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4" />
           <span>{error}</span>
         </div>
       )}
 
       {/* Directory Table */}
-      <div className="glass-panel rounded-xl overflow-hidden shadow-lg">
+      <div className="glass-panel rounded-none overflow-hidden border-neutral-800">
         {loading ? (
           <div className="p-16 flex flex-col items-center justify-center">
-            <Loader className="w-8 h-8 animate-spin text-brand-accent mb-3" />
-            <span className="text-slate-400 text-sm">Querying customer listings...</span>
+            <Loader className="w-6 h-6 animate-spin text-white mb-2" />
+            <span className="text-neutral-500 text-[10px] font-bold uppercase tracking-widest">Querying profiles...</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
             {customers.length > 0 ? (
-              <table className="w-full text-left text-sm border-collapse">
+              <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-slate-950/40 text-slate-400 font-semibold border-b border-slate-850">
+                  <tr className="bg-neutral-950 text-neutral-500 font-semibold border-b border-neutral-900 uppercase tracking-wider">
                     <th className="px-6 py-4">Borrower Name</th>
                     <th className="px-6 py-4">Application ID</th>
                     <th className="px-6 py-4">Annual Income</th>
@@ -264,25 +261,25 @@ const CustomerDirectory = () => {
                     <th className="px-6 py-4 text-right">Credit Evaluation</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/40">
+                <tbody className="divide-y divide-neutral-900">
                   {customers.map((customer) => {
                     const age = Math.round(-customer.days_birth / 365.25);
                     const employment = customer.days_employed === 365243 
-                      ? 'Pensioner' 
-                      : `${Math.round(-customer.days_employed / 365.25)} yrs`;
+                      ? 'PENSIONER' 
+                      : `${Math.round(-customer.days_employed / 365.25)} YRS`;
 
                     return (
-                      <tr key={customer.id} className="hover:bg-slate-800/15 transition-colors">
+                      <tr key={customer.id} className="hover:bg-neutral-950 transition-colors uppercase">
                         <td className="px-6 py-4">
-                          <div className="font-semibold text-slate-100">{customer.first_name} {customer.last_name}</div>
-                          <div className="text-slate-500 text-xs">{customer.email || 'No email registered'}</div>
+                          <div className="font-bold text-white">{customer.first_name} {customer.last_name}</div>
+                          <div className="text-neutral-500 text-[10px] font-mono lowercase">{customer.email || 'no email'}</div>
                         </td>
-                        <td className="px-6 py-4 font-mono text-slate-300">{customer.sk_id_curr}</td>
-                        <td className="px-6 py-4 text-slate-300">${customer.amt_income_total.toLocaleString()}</td>
-                        <td className="px-6 py-4 text-slate-300">${customer.amt_credit.toLocaleString()}</td>
-                        <td className="px-6 py-4 text-slate-300">
+                        <td className="px-6 py-4 font-mono text-neutral-300">{customer.sk_id_curr}</td>
+                        <td className="px-6 py-4 text-neutral-300 font-mono">${customer.amt_income_total.toLocaleString()}</td>
+                        <td className="px-6 py-4 text-neutral-300 font-mono">${customer.amt_credit.toLocaleString()}</td>
+                        <td className="px-6 py-4 text-neutral-300">
                           <div>{age} yrs old</div>
-                          <div className="text-slate-500 text-xs">{employment}</div>
+                          <div className="text-neutral-500 text-[10px]">{employment}</div>
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
@@ -290,7 +287,7 @@ const CustomerDirectory = () => {
                               <>
                                 <button
                                   onClick={() => handleAssess(customer.id)}
-                                  className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-lg text-xs font-semibold shadow flex items-center gap-1.5 transition-all duration-150 disabled:opacity-50"
+                                  className="px-3 py-1.5 bg-white text-black hover:bg-black hover:text-white border border-white text-[10px] font-bold uppercase flex items-center gap-1.5 transition-all duration-150 disabled:opacity-50"
                                   disabled={actionLoading !== null}
                                 >
                                   {actionLoading === customer.id ? (
@@ -298,11 +295,11 @@ const CustomerDirectory = () => {
                                   ) : (
                                     <Activity className="w-3.5 h-3.5" />
                                   )}
-                                  Evaluate Risk
+                                  Assess Risk
                                 </button>
                                 <button
                                   onClick={() => handleOpenEditModal(customer)}
-                                  className="p-1.5 bg-brand-card hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700/80 transition-colors"
+                                  className="p-1.5 bg-black hover:bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800 hover:border-neutral-600 transition-colors"
                                   title="Edit Profile"
                                 >
                                   <Edit className="w-4 h-4" />
@@ -312,7 +309,7 @@ const CustomerDirectory = () => {
                             {isAdmin() && (
                               <button
                                 onClick={() => handleDelete(customer.id)}
-                                className="p-1.5 bg-brand-card hover:bg-rose-500/15 border border-slate-700/80 text-slate-400 hover:text-rose-400 rounded-lg transition-colors"
+                                className="p-1.5 bg-black hover:bg-white text-neutral-400 hover:text-black border border-neutral-800 hover:border-white transition-colors"
                                 title="Delete Profile"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -326,8 +323,8 @@ const CustomerDirectory = () => {
                 </tbody>
               </table>
             ) : (
-              <div className="p-16 text-center text-slate-500">
-                No borrower profiles found. Register a new customer to perform automated risk metrics evaluation.
+              <div className="p-16 text-center text-neutral-600 uppercase tracking-widest text-xs">
+                No borrower profiles registered.
               </div>
             )}
           </div>
@@ -336,15 +333,15 @@ const CustomerDirectory = () => {
 
       {/* Modal Dialog for Create/Edit */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-[#121826] border border-slate-800 rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-slideUp">
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-black border border-white rounded-none w-full max-w-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-slideUp font-mono">
             {/* Modal Header */}
-            <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/40">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <UserCheck className="text-brand-accent w-6 h-6" />
-                {editingCustomer ? 'Modify Borrower Profile' : 'Register New Borrower Profile'}
+            <div className="p-6 border-b border-neutral-900 flex justify-between items-center bg-black">
+              <h2 className="text-base font-black text-white flex items-center gap-2 uppercase tracking-wider">
+                <UserCheck className="text-white w-5 h-5" />
+                {editingCustomer ? 'Modify Profile' : 'Register Profile'}
               </h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white p-1 rounded-lg">
+              <button onClick={() => setIsModalOpen(false)} className="text-neutral-500 hover:text-white p-1">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -352,7 +349,7 @@ const CustomerDirectory = () => {
             {/* Modal Content */}
             <form onSubmit={handleFormSubmit} className="p-6 overflow-y-auto space-y-6 flex-1">
               {error && (
-                <div className="p-3 bg-rose-500/10 border border-rose-500/25 text-rose-400 rounded-lg text-xs flex gap-2">
+                <div className="p-3 border border-white text-white bg-black text-xs flex gap-2">
                   <AlertTriangle className="w-4 h-4 shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -416,9 +413,8 @@ const CustomerDirectory = () => {
                 </div>
               </div>
 
-              {/* Section divider */}
-              <div className="border-t border-slate-800 pt-4">
-                <h3 className="text-sm font-semibold text-brand-accent uppercase tracking-wider mb-4">Financial & Employment Details</h3>
+              <div className="border-t border-neutral-900 pt-4">
+                <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Financial & Employment Details</h3>
               </div>
 
               {/* Grid 3: Income / Credit */}
@@ -513,7 +509,7 @@ const CustomerDirectory = () => {
                   />
                 </div>
                 <div>
-                  <label className="form-label">Years of Current Employment</label>
+                  <label className="form-label">Years of Employment</label>
                   <input 
                     type="number" 
                     value={form.employment_years}
@@ -524,7 +520,7 @@ const CustomerDirectory = () => {
                   />
                 </div>
                 <div className="flex items-center pt-8">
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-center gap-2.5 cursor-pointer">
                     <input 
                       type="checkbox" 
                       checked={form.is_retired}
@@ -537,22 +533,21 @@ const CustomerDirectory = () => {
                           employment_years: checked ? 0 : 5
                         });
                       }}
-                      className="w-5 h-5 rounded border-slate-700 bg-brand-panel text-brand-accent focus:ring-0 focus:ring-offset-0"
+                      className="w-4 h-4 rounded-none border-neutral-800 bg-black text-white focus:ring-0 focus:ring-offset-0"
                     />
-                    <span className="text-sm font-medium text-slate-300">Pensioner / Unemployed</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">Pensioner / Unemployed</span>
                   </label>
                 </div>
               </div>
 
-              {/* Section divider */}
-              <div className="border-t border-slate-800 pt-4">
-                <h3 className="text-sm font-semibold text-brand-accent uppercase tracking-wider mb-4">External Bureau Ratings (Scale 0.0 to 1.0)</h3>
+              <div className="border-t border-neutral-900 pt-4">
+                <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">External Bureau Ratings (Scale 0.0 to 1.0)</h3>
               </div>
 
               {/* Grid 6: Bureau Sources */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="form-label">External Source 1 (FICO/Bureau)</label>
+                  <label className="form-label">External Source 1</label>
                   <input 
                     type="number" 
                     step="0.001"
@@ -565,7 +560,7 @@ const CustomerDirectory = () => {
                   />
                 </div>
                 <div>
-                  <label className="form-label">External Source 2 (Alternative Bureau)</label>
+                  <label className="form-label">External Source 2</label>
                   <input 
                     type="number" 
                     step="0.001"
@@ -578,7 +573,7 @@ const CustomerDirectory = () => {
                   />
                 </div>
                 <div>
-                  <label className="form-label">External Source 3 (Bureau Score C)</label>
+                  <label className="form-label">External Source 3</label>
                   <input 
                     type="number" 
                     step="0.001"
@@ -592,9 +587,8 @@ const CustomerDirectory = () => {
                 </div>
               </div>
 
-              {/* Section divider */}
-              <div className="border-t border-slate-800 pt-4">
-                <h3 className="text-sm font-semibold text-brand-accent uppercase tracking-wider mb-4">Asset Details & Social Demographics</h3>
+              <div className="border-t border-neutral-900 pt-4">
+                <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Asset Details & Social Demographics</h3>
               </div>
 
               {/* Grid 7: Assets & Family */}
@@ -673,7 +667,7 @@ const CustomerDirectory = () => {
               </div>
 
               {/* Modal Actions */}
-              <div className="border-t border-slate-800 pt-6 flex justify-end gap-3 bg-slate-900/10 -mx-6 -mb-6 p-6">
+              <div className="border-t border-neutral-900 pt-6 flex justify-end gap-3 bg-black -mx-6 -mb-6 p-6">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="btn-secondary">
                   Cancel
                 </button>

@@ -13,7 +13,6 @@ import {
   UserSquare2, 
   LogOut, 
   User,
-  ShieldCheck,
   ChevronRight
 } from 'lucide-react';
 
@@ -24,8 +23,8 @@ const ProtectedRoute = ({ children, requireAnalyst = false, requireAdmin = false
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-brand-dark">
-        <div className="w-8 h-8 border-4 border-brand-accent border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -47,7 +46,7 @@ const ProtectedRoute = ({ children, requireAnalyst = false, requireAdmin = false
 
 // Main Navigation Layout Sidebar
 const Layout = ({ children }) => {
-  const { user, logout, isAdmin, isAnalyst } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -58,15 +57,17 @@ const Layout = ({ children }) => {
   ];
 
   return (
-    <div className="h-screen flex bg-brand-dark overflow-hidden">
+    <div className="h-screen flex bg-black overflow-hidden font-mono">
       {/* Sidebar Panel */}
-      <aside className="hidden md:flex md:flex-col md:w-64 bg-[#101625] border-r border-slate-800/80 shrink-0">
+      <aside className="hidden md:flex md:flex-col md:w-64 bg-black border-r border-neutral-900 shrink-0">
         {/* Brand Logo header */}
-        <div className="p-6 border-b border-slate-800/60 flex items-center gap-3">
-          <Shield className="text-brand-accent w-7 h-7" />
+        <div className="p-6 border-b border-neutral-900 flex items-center gap-3">
+          <div className="p-1.5 border border-white text-white shrink-0">
+            <Shield className="w-5 h-5" />
+          </div>
           <div>
-            <div className="font-bold text-white text-base tracking-wide leading-none">Luffy <span className="text-brand-accent text-xs">Risk Management</span></div>
-            <span className="text-[10px] text-slate-500 font-semibold tracking-wider uppercase">Risk Scorecard</span>
+            <div className="font-extrabold text-white text-base tracking-[0.2em] leading-none uppercase">LUFFY</div>
+            <span className="text-[9px] text-neutral-500 font-semibold tracking-normal uppercase">Risk Management</span>
           </div>
         </div>
 
@@ -80,38 +81,32 @@ const Layout = ({ children }) => {
               <Link
                 key={item.name}
                 to={item.path}
-                className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all duration-150 ${
+                className={`flex items-center justify-between px-4 py-3 rounded-none text-xs font-semibold uppercase tracking-wider transition-all duration-150 ${
                   isActive 
-                    ? 'bg-gradient-to-r from-blue-600/15 to-blue-500/5 text-brand-accent border-l-4 border-brand-accent pl-3' 
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/20'
+                    ? 'bg-white text-black font-bold border-l-4 border-black pl-3' 
+                    : 'text-neutral-400 hover:text-white hover:bg-neutral-950 border border-transparent hover:border-neutral-900'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Icon className="w-5 h-5 shrink-0" />
+                  <Icon className="w-4 h-4 shrink-0" />
                   <span>{item.name}</span>
                 </div>
-                {isActive && <ChevronRight className="w-4 h-4" />}
+                {isActive && <ChevronRight className="w-3.5 h-3.5" />}
               </Link>
             );
           })}
         </nav>
 
         {/* User Card Profile & Logout */}
-        <div className="p-4 border-t border-slate-800/60 bg-[#0d121e]">
+        <div className="p-4 border-t border-neutral-900 bg-black">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-slate-800 rounded-lg text-slate-300">
-              <User className="w-5 h-5" />
+            <div className="p-2 border border-neutral-850 rounded-none text-neutral-400 bg-neutral-950">
+              <User className="w-4 h-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-xs font-semibold text-slate-200 truncate">{user?.username}</div>
-              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold border mt-1 capitalize ${
-                user?.role === 'ADMIN' 
-                  ? 'bg-rose-500/10 border-rose-500/20 text-brand-rose'
-                  : user?.role === 'ANALYST'
-                    ? 'bg-blue-500/10 border-blue-500/20 text-brand-accent'
-                    : 'bg-slate-500/10 border-slate-500/20 text-slate-400'
-              }`}>
-                {user?.role.toLowerCase()}
+              <div className="text-xs font-bold text-neutral-200 truncate font-mono uppercase">{user?.username}</div>
+              <span className="inline-flex items-center px-1.5 py-0.5 border border-neutral-800 text-neutral-500 rounded-none text-[9px] font-bold mt-1 uppercase font-mono tracking-wider">
+                {user?.role}
               </span>
             </div>
           </div>
@@ -120,9 +115,9 @@ const Layout = ({ children }) => {
               logout();
               navigate('/login');
             }}
-            className="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 bg-slate-800 hover:bg-rose-950/20 text-slate-400 hover:text-rose-400 rounded-lg text-xs font-semibold border border-slate-700/60 hover:border-rose-900/30 transition-all duration-150"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black hover:bg-white text-white hover:text-black rounded-none text-[10px] font-bold border border-neutral-800 hover:border-white uppercase tracking-wider transition-all duration-150"
           >
-            <LogOut className="w-4 h-4 shrink-0" />
+            <LogOut className="w-3.5 h-3.5 shrink-0" />
             Sign Out
           </button>
         </div>
@@ -131,24 +126,24 @@ const Layout = ({ children }) => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile Header */}
-        <header className="md:hidden bg-[#101625] border-b border-slate-800/80 px-6 py-4 flex items-center justify-between shrink-0">
+        <header className="md:hidden bg-black border-b border-neutral-900 px-6 py-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            <Shield className="text-brand-accent w-6 h-6" />
-            <span className="font-bold text-white text-sm">Luffy Risk Management</span>
+            <Shield className="text-white w-5 h-5" />
+            <span className="font-bold text-white text-xs tracking-widest uppercase">LUFFY RISK</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-xs text-slate-400 font-medium capitalize font-mono">👤 {user?.username}</span>
+            <span className="text-[10px] text-neutral-400 font-bold uppercase font-mono">👤 {user?.username}</span>
             <button 
               onClick={() => { logout(); navigate('/login'); }} 
-              className="text-slate-400 hover:text-rose-400"
+              className="text-neutral-400 hover:text-white"
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </header>
 
         {/* Scrollable container */}
-        <main className="flex-1 overflow-y-auto bg-brand-dark p-6 md:p-8">
+        <main className="flex-1 overflow-y-auto bg-black p-6 md:p-8">
           {children}
         </main>
       </div>

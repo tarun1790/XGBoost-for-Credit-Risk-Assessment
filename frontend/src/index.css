@@ -4,69 +4,67 @@
 
 @layer base {
   body {
-    @apply bg-brand-dark text-slate-200 overflow-x-hidden;
+    background-color: #000000;
+    color: #ffffff;
     font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.02em;
   }
 }
 
-/* Glassmorphism Panels */
+/* Premium Brutalist Monochrome Panels */
 .glass-panel {
-  background: rgba(22, 29, 48, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: #000000;
+  border: 1px solid #ffffff;
 }
 
 .glass-card {
-  background: rgba(30, 41, 66, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background-color: #000000;
+  border: 1px solid #222222;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
-  border-color: rgba(59, 130, 246, 0.2);
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.08);
-  transform: translateY(-2px);
+  border-color: #ffffff;
+  transform: translateY(-1px);
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar (Grayscale) */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0b0f19;
+  background: #000000;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e2942;
-  border-radius: 3px;
+  background: #333333;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3b82f6;
+  background: #ffffff;
 }
 
-/* Input Fields Styles */
+/* Form inputs (Brutalist) */
 .form-input {
-  @apply w-full px-4 py-2.5 bg-brand-panel border border-slate-700/60 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-accent/50 focus:border-brand-accent transition-all duration-150;
+  @apply w-full px-4 py-3 bg-black border border-neutral-800 rounded-none text-white placeholder-neutral-600 focus:outline-none focus:ring-0 focus:border-white transition-all duration-150 font-mono text-sm;
 }
 
 .form-label {
-  @apply block mb-1.5 text-sm font-medium text-slate-300;
+  @apply block mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-400;
 }
 
-/* Dashboard Action Buttons */
+/* Action Buttons (High contrast B&W) */
 .btn-primary {
-  @apply px-4 py-2.5 bg-gradient-to-r from-blue-600 to-brand-accent hover:from-blue-500 hover:to-blue-400 text-white font-medium rounded-lg shadow-md hover:shadow-glow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500/50;
+  @apply px-5 py-3 bg-white text-black hover:bg-black hover:text-white border border-white font-bold rounded-none uppercase tracking-wider text-xs transition-all duration-150 focus:outline-none;
 }
 
 .btn-secondary {
-  @apply px-4 py-2.5 bg-brand-card hover:bg-slate-700/60 text-slate-200 border border-slate-700 font-medium rounded-lg transition-all duration-150 focus:outline-none;
+  @apply px-5 py-3 bg-black text-white hover:bg-white hover:text-black border border-neutral-800 hover:border-white font-bold rounded-none uppercase tracking-wider text-xs transition-all duration-150 focus:outline-none;
 }

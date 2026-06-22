@@ -26,7 +26,6 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 
-// Feature name mapper for borrower-friendly visualization
 const formatFeatureName = (name) => {
   const mapping = {
     'EXT_SOURCE_2': 'Credit Bureau Score (Source B)',
@@ -73,8 +72,6 @@ const formatFeatureName = (name) => {
   };
 
   if (mapping[name]) return mapping[name];
-  
-  // Generic formatter fallback for unnamed encoded categories
   return name
     .replace('NAME_INCOME_TYPE_', 'Income Class: ')
     .replace('NAME_EDUCATION_TYPE_', 'Education: ')
@@ -98,7 +95,7 @@ const RiskAssessmentDetails = () => {
         setPrediction(data);
       } catch (err) {
         console.error(err);
-        setError('Could not retrieve risk assessment report details.');
+        setError('Could not fetch assessment report.');
       } finally {
         setLoading(false);
       }
@@ -108,20 +105,20 @@ const RiskAssessmentDetails = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-100px)]">
-        <Loader className="w-8 h-8 animate-spin text-brand-accent mb-3" />
-        <span className="text-slate-400 font-medium ml-3">Compiling credit evaluation audit...</span>
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-100px)]">
+        <Loader className="w-6 h-6 animate-spin text-white mb-2" />
+        <span className="text-neutral-500 font-bold uppercase text-[10px] tracking-widest font-mono">Compiling Audit...</span>
       </div>
     );
   }
 
   if (error || !prediction) {
     return (
-      <div className="space-y-4 p-8 glass-panel rounded-xl text-center max-w-md mx-auto mt-12">
-        <ShieldAlert className="w-12 h-12 text-rose-500 mx-auto" />
-        <h3 className="text-lg font-bold text-white">Report Unobtainable</h3>
-        <p className="text-slate-400 text-sm">{error || 'Prediction record does not exist.'}</p>
-        <button onClick={() => navigate('/')} className="btn-secondary py-2 mt-4 inline-flex items-center gap-2">
+      <div className="space-y-4 p-8 border border-white bg-black rounded-none text-center max-w-md mx-auto mt-12 font-mono">
+        <ShieldAlert className="w-10 h-10 text-white mx-auto" />
+        <h3 className="text-sm font-bold uppercase tracking-wider text-white">Report Unobtainable</h3>
+        <p className="text-neutral-500 text-xs">{error || 'Prediction record does not exist.'}</p>
+        <button onClick={() => navigate('/')} className="btn-secondary py-2 mt-4 inline-flex items-center gap-2 text-xs">
           <ArrowLeft className="w-4 h-4" /> Back to Dashboard
         </button>
       </div>
@@ -134,207 +131,184 @@ const RiskAssessmentDetails = () => {
   const emp = customer.days_employed === 365243 ? 'Retired / Pensioner' : `${Math.round(-customer.days_employed / 365.25)} years`;
 
   // Process SHAP values for the chart
-  // Filter out features with near zero contribution and sort by absolute magnitude
   const shapChartData = Object.entries(shap_explanations)
     .map(([name, val]) => ({
       rawName: name,
       name: formatFeatureName(name),
       value: parseFloat(val)
     }))
-    .filter(item => Math.abs(item.value) > 0.005) // Filter out noise
-    .sort((a, b) => Math.abs(b.value) - Math.abs(a.value)) // Sort by absolute strength
-    .slice(0, 10) // Select top 10 influencers
-    .reverse(); // Reverse for horizontal layout order (top at the top)
+    .filter(item => Math.abs(item.value) > 0.005) 
+    .sort((a, b) => Math.abs(b.value) - Math.abs(a.value)) 
+    .slice(0, 10) 
+    .reverse(); 
 
   // Calibrate score Progress Gauge (300-850 scale)
   const radius = 85;
-  const strokeWidth = 14;
+  const strokeWidth = 12;
   const circumference = 2 * Math.PI * radius;
   const scoreOffset = Math.max(300, Math.min(850, credit_score));
   const progressPercent = (scoreOffset - 300) / 550;
   const strokeDashoffset = circumference - (progressPercent * circumference);
 
-  // Set colors according to risk tiers
-  let ratingColorClass = "text-rose-500";
-  let ratingBorderClass = "border-rose-500/20 bg-rose-500/5";
-  let gaugeColor = "#f43f5e"; // rose
-
-  if (credit_score >= 750) {
-    ratingColorClass = "text-emerald-400";
-    ratingBorderClass = "border-emerald-500/20 bg-emerald-500/5";
-    gaugeColor = "#10b981"; // emerald
-  } else if (credit_score >= 700) {
-    ratingColorClass = "text-blue-400";
-    ratingBorderClass = "border-blue-500/20 bg-blue-500/5";
-    gaugeColor = "#60a5fa"; // blue
-  } else if (credit_score >= 600) {
-    ratingColorClass = "text-amber-400";
-    ratingBorderClass = "border-amber-500/20 bg-amber-500/5";
-    gaugeColor = "#f59e0b"; // amber
-  }
-
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6 animate-fadeIn font-mono">
       {/* Back button header */}
-      <div className="flex items-center gap-4">
-        <Link to="/" className="p-2 bg-brand-card hover:bg-slate-700/60 text-slate-400 hover:text-white rounded-lg border border-slate-700/80 transition-all duration-150">
-          <ArrowLeft className="w-5 h-5" />
+      <div className="flex items-center gap-4 border-b border-neutral-900 pb-5">
+        <Link to="/" className="p-2 bg-black hover:bg-white text-white hover:text-black border border-neutral-850 hover:border-white transition-all duration-150">
+          <ArrowLeft className="w-4 h-4" />
         </Link>
         <div>
-          <span className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Evaluation Audit Report</span>
-          <h1 className="text-2xl font-bold text-white">Risk Profile: {customer.first_name} {customer.last_name}</h1>
+          <span className="text-neutral-500 text-[10px] font-bold uppercase tracking-wider">Evaluation Audit Report</span>
+          <h1 className="text-xl font-black text-white uppercase">Borrower: {customer.first_name} {customer.last_name}</h1>
         </div>
       </div>
 
       {/* Main Grid: Score Gauge and Details */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Credit Score gauge Card */}
-        <div className="glass-panel p-6 rounded-xl flex flex-col items-center justify-center text-center space-y-5">
-          <h3 className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Computed Credit Rating</h3>
+        <div className="glass-panel p-6 rounded-none flex flex-col items-center justify-center text-center space-y-5 border-neutral-800">
+          <h3 className="text-neutral-500 text-[10px] font-bold uppercase tracking-wider">Credit Rating Scorecard</h3>
           
           {/* Animated SVG Circle Progress Gauge */}
           <div className="relative flex items-center justify-center w-52 h-52">
             <svg className="w-full h-full -rotate-90">
-              {/* Background ring */}
               <circle
                 cx="104"
                 cy="104"
                 r={radius}
-                className="stroke-slate-800"
+                className="stroke-neutral-900"
                 strokeWidth={strokeWidth}
                 fill="transparent"
               />
-              {/* Score filling ring */}
               <circle
                 cx="104"
                 cy="104"
                 r={radius}
-                stroke={gaugeColor}
+                stroke="#ffffff"
                 strokeWidth={strokeWidth}
                 fill="transparent"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
-                strokeLinecap="round"
+                strokeLinecap="square"
                 className="transition-all duration-1000 ease-out"
               />
             </svg>
-            {/* Center score readout */}
             <div className="absolute flex flex-col items-center justify-center">
-              <span className="text-4xl font-extrabold text-white tracking-tight">{credit_score}</span>
-              <span className="text-slate-400 text-[10px] uppercase font-semibold tracking-wider mt-0.5">Score Card</span>
-              <span className="text-slate-500 text-[9px] mt-1 font-mono">Scale: 300 - 850</span>
+              <span className="text-4xl font-black text-white tracking-tight">{credit_score}</span>
+              <span className="text-neutral-500 text-[9px] uppercase font-bold tracking-widest mt-0.5">Rating</span>
+              <span className="text-neutral-600 text-[8px] mt-1">Scale: 300 - 850</span>
             </div>
           </div>
 
-          <div className={`w-full p-4.5 rounded-xl border ${ratingBorderClass} text-center space-y-1`}>
-            <span className="text-slate-400 text-xs font-medium">Risk Status Classification</span>
-            <div className={`text-base font-bold uppercase tracking-wide ${ratingColorClass}`}>
+          <div className="w-full p-4 border border-neutral-850 bg-neutral-950 text-center space-y-1">
+            <span className="text-neutral-500 text-[10px] font-bold uppercase tracking-wider">Risk Category</span>
+            <div className="text-sm font-bold uppercase tracking-wider text-white">
               {risk_category}
             </div>
           </div>
 
-          <div className="w-full grid grid-cols-2 gap-3 text-sm">
-            <div className="bg-brand-card/40 border border-slate-800/80 p-3 rounded-lg flex flex-col">
-              <span className="text-slate-500 text-[10px] font-semibold uppercase">Default Prob (PD)</span>
-              <span className="text-lg font-bold text-slate-100 mt-1">{pdPercent}%</span>
+          <div className="w-full grid grid-cols-2 gap-3 text-xs">
+            <div className="bg-black border border-neutral-850 p-3 rounded-none flex flex-col">
+              <span className="text-neutral-500 text-[9px] font-bold uppercase tracking-wider">Default Prob (PD)</span>
+              <span className="text-base font-bold text-white mt-1">{pdPercent}%</span>
             </div>
-            <div className="bg-brand-card/40 border border-slate-800/80 p-3 rounded-lg flex flex-col">
-              <span className="text-slate-500 text-[10px] font-semibold uppercase">Approval Status</span>
-              <span className={`text-lg font-bold mt-1 ${credit_score >= 600 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                {credit_score >= 600 ? 'Approved' : 'Declined'}
+            <div className="bg-black border border-neutral-850 p-3 rounded-none flex flex-col">
+              <span className="text-neutral-500 text-[9px] font-bold uppercase tracking-wider">Approval</span>
+              <span className="text-base font-bold text-white mt-1">
+                {credit_score >= 600 ? 'APPROVED' : 'DECLINED'}
               </span>
             </div>
           </div>
         </div>
 
         {/* Right Column: Customer Details Cards */}
-        <div className="lg:col-span-2 glass-panel p-6 rounded-xl flex flex-col justify-between">
-          <div className="border-b border-slate-850 pb-4 mb-5 flex items-center justify-between">
-            <h4 className="text-lg font-bold text-slate-100">Borrower Information Profile</h4>
-            <div className="flex items-center gap-1 text-slate-500 text-xs">
-              <Calendar className="w-4 h-4" />
-              Assessed: {new Date(prediction.assessed_at).toLocaleDateString()}
+        <div className="lg:col-span-2 glass-panel p-6 rounded-none flex flex-col justify-between border-neutral-800">
+          <div className="border-b border-neutral-900 pb-4 mb-5 flex items-center justify-between">
+            <h4 className="text-sm font-bold text-white uppercase tracking-wider">Borrower Profile Data</h4>
+            <div className="flex items-center gap-1.5 text-neutral-500 text-[10px] uppercase font-bold">
+              <Calendar className="w-3.5 h-3.5" />
+              Date: {new Date(prediction.assessed_at).toLocaleDateString()}
             </div>
           </div>
 
           {/* Details Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm flex-1">
-            <div className="flex justify-between items-center py-2 border-b border-slate-800/40">
-              <span className="text-slate-500 flex items-center gap-1.5"><User className="w-4 h-4" /> Full Name</span>
-              <span className="font-semibold text-slate-200">{customer.first_name} {customer.last_name}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3.5 text-xs flex-1 uppercase">
+            <div className="flex justify-between items-center py-1.5 border-b border-neutral-900">
+              <span className="text-neutral-500 flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> Full Name</span>
+              <span className="font-bold text-neutral-200">{customer.first_name} {customer.last_name}</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-slate-800/40">
-              <span className="text-slate-500 flex items-center gap-1.5"><Scale className="w-4 h-4" /> Application ID</span>
-              <span className="font-mono text-slate-200">{customer.sk_id_curr}</span>
+            <div className="flex justify-between items-center py-1.5 border-b border-neutral-900">
+              <span className="text-neutral-500 flex items-center gap-1.5"><Scale className="w-3.5 h-3.5" /> App ID</span>
+              <span className="font-bold text-neutral-200">{customer.sk_id_curr}</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-slate-800/40">
-              <span className="text-slate-500 flex items-center gap-1.5"><DollarSign className="w-4 h-4" /> Annual Income</span>
-              <span className="font-semibold text-slate-200">${customer.amt_income_total.toLocaleString()}</span>
+            <div className="flex justify-between items-center py-1.5 border-b border-neutral-900">
+              <span className="text-neutral-500 flex items-center gap-1.5"><DollarSign className="w-3.5 h-3.5" /> Total Income</span>
+              <span className="font-bold text-neutral-200">${customer.amt_income_total.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-slate-800/40">
-              <span className="text-slate-500 flex items-center gap-1.5"><TrendingUp className="w-4 h-4" /> Loan Credit Size</span>
-              <span className="font-semibold text-slate-200">${customer.amt_credit.toLocaleString()}</span>
+            <div className="flex justify-between items-center py-1.5 border-b border-neutral-900">
+              <span className="text-neutral-500 flex items-center gap-1.5"><TrendingUp className="w-3.5 h-3.5" /> Credit Size</span>
+              <span className="font-bold text-neutral-200">${customer.amt_credit.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-slate-800/40">
-              <span className="text-slate-500 flex items-center gap-1.5"><DollarSign className="w-4 h-4" /> Monthly Annuity</span>
-              <span className="font-semibold text-slate-200">${customer.amt_annuity.toLocaleString()}</span>
+            <div className="flex justify-between items-center py-1.5 border-b border-neutral-900">
+              <span className="text-neutral-500 flex items-center gap-1.5"><DollarSign className="w-3.5 h-3.5" /> Annuity Size</span>
+              <span className="font-bold text-neutral-200">${customer.amt_annuity.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-slate-800/40">
-              <span className="text-slate-500 flex items-center gap-1.5"><Calendar className="w-4 h-4" /> Age</span>
-              <span className="font-semibold text-slate-200">{age} years</span>
+            <div className="flex justify-between items-center py-1.5 border-b border-neutral-900">
+              <span className="text-neutral-500 flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Age</span>
+              <span className="font-bold text-neutral-200">{age} yrs</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-slate-800/40">
-              <span className="text-slate-500 flex items-center gap-1.5"><Briefcase className="w-4 h-4" /> Employment Term</span>
-              <span className="font-semibold text-slate-200">{emp}</span>
+            <div className="flex justify-between items-center py-1.5 border-b border-neutral-900">
+              <span className="text-neutral-500 flex items-center gap-1.5"><Briefcase className="w-3.5 h-3.5" /> Employed</span>
+              <span className="font-bold text-neutral-200">{emp}</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-slate-800/40">
-              <span className="text-slate-500 flex items-center gap-1.5"><HelpCircle className="w-4 h-4" /> Education Level</span>
-              <span className="font-semibold text-slate-200">{customer.name_education_type.replace('secondary special', 'special')}</span>
+            <div className="flex justify-between items-center py-1.5 border-b border-neutral-900">
+              <span className="text-neutral-500 flex items-center gap-1.5"><HelpCircle className="w-3.5 h-3.5" /> Education</span>
+              <span className="font-bold text-neutral-200 truncate max-w-[150px]">{customer.name_education_type.replace('secondary special', 'special')}</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-slate-800/40">
-              <span className="text-slate-500 flex items-center gap-1.5">🔑 Income Source</span>
-              <span className="font-semibold text-slate-200">{customer.name_income_type}</span>
+            <div className="flex justify-between items-center py-1.5 border-b border-neutral-900">
+              <span className="text-neutral-500 flex items-center gap-1.5">💼 Income Class</span>
+              <span className="font-bold text-neutral-200">{customer.name_income_type}</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-slate-800/40">
-              <span className="text-slate-500 flex items-center gap-1.5">🏠 Housing Condition</span>
-              <span className="font-semibold text-slate-200">{customer.name_housing_type.replace('House / apartment', 'Own House')}</span>
+            <div className="flex justify-between items-center py-1.5 border-b border-neutral-900">
+              <span className="text-neutral-500 flex items-center gap-1.5">🏠 Housing</span>
+              <span className="font-bold text-neutral-200">{customer.name_housing_type.replace('House / apartment', 'Own House')}</span>
             </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-slate-850 flex items-center gap-4 text-xs text-slate-500">
+          <div className="mt-6 pt-4 border-t border-neutral-900 flex items-center gap-4 text-[10px] text-neutral-500">
             <div>
-              <span className="font-semibold text-slate-400">External Bureau A:</span> {customer.ext_source_1 !== null ? customer.ext_source_1.toFixed(3) : 'Missing'}
+              <span className="font-bold text-neutral-400">Bureau A:</span> {customer.ext_source_1 !== null ? customer.ext_source_1.toFixed(3) : 'Missing'}
             </div>
             <div>
-              <span className="font-semibold text-slate-400">Bureau B:</span> {customer.ext_source_2 !== null ? customer.ext_source_2.toFixed(3) : 'Missing'}
+              <span className="font-bold text-neutral-400">Bureau B:</span> {customer.ext_source_2 !== null ? customer.ext_source_2.toFixed(3) : 'Missing'}
             </div>
             <div>
-              <span className="font-semibold text-slate-400">Bureau C:</span> {customer.ext_source_3 !== null ? customer.ext_source_3.toFixed(3) : 'Missing'}
+              <span className="font-bold text-neutral-400">Bureau C:</span> {customer.ext_source_3 !== null ? customer.ext_source_3.toFixed(3) : 'Missing'}
             </div>
           </div>
         </div>
       </div>
 
       {/* SHAP Explanation Section */}
-      <div className="glass-panel p-6 rounded-xl space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-850 pb-4">
+      <div className="glass-panel p-6 rounded-none border-neutral-800 space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-900 pb-4">
           <div>
-            <h3 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-              <ShieldCheck className="text-brand-accent w-6 h-6" />
+            <h3 className="text-base font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <ShieldCheck className="text-white w-4.5 h-4.5" />
               Explainable AI: Model Feature Contribution (SHAP)
             </h3>
-            <p className="text-slate-400 text-xs mt-1">
-              Diverging impact of features shifting the Probability of Default (PD) relative to the baseline value.
+            <p className="text-neutral-500 text-[10px] uppercase tracking-wider mt-1">
+              Diverging attributions shifting Probability of Default (PD) relative to baseline log-odds.
             </p>
           </div>
-          <div className="flex items-center gap-3 text-xs">
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-rose-500 shrink-0" /> Pushes Risk Up (Bad)</span>
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-500 shrink-0" /> Pushes Risk Down (Good)</span>
+          <div className="flex items-center gap-3 text-[10px] font-bold uppercase">
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-white shrink-0 border border-neutral-700" /> Pushes Risk Up (Bad)</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-neutral-600 shrink-0 border border-neutral-700" /> Pushes Risk Down (Good)</span>
           </div>
         </div>
 
         {/* Recharts Diverging Bar Chart */}
-        <div className="h-96">
+        <div className="h-96 text-xs">
           {shapChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -342,13 +316,13 @@ const RiskAssessmentDetails = () => {
                 layout="vertical"
                 margin={{ top: 10, right: 30, left: 40, bottom: 10 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                <XAxis type="number" stroke="#64748b" fontSize={11} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#222222" />
+                <XAxis type="number" stroke="#666666" fontSize={10} />
                 <YAxis 
                   type="category" 
                   dataKey="name" 
-                  stroke="#94a3b8" 
-                  fontSize={10.5} 
+                  stroke="#888888" 
+                  fontSize={10} 
                   width={200}
                   tickLine={false}
                 />
@@ -358,13 +332,13 @@ const RiskAssessmentDetails = () => {
                       const data = payload[0].payload;
                       const isRiskUp = data.value > 0;
                       return (
-                        <div className="bg-brand-panel p-3 border border-slate-700 rounded-lg shadow-xl text-xs space-y-1">
-                          <p className="font-bold text-slate-100">{data.name}</p>
-                          <p className="text-slate-400 font-mono">SHAP: {data.value.toFixed(4)}</p>
-                          <p className={`font-semibold ${isRiskUp ? 'text-rose-400' : 'text-emerald-400'}`}>
+                        <div className="bg-black p-3 border border-white rounded-none text-[10px] space-y-1 font-mono uppercase text-white">
+                          <p className="font-bold text-white">{data.name}</p>
+                          <p className="text-neutral-500">SHAP: {data.value.toFixed(4)}</p>
+                          <p className="font-semibold">
                             {isRiskUp 
-                              ? '⚠️ Increases borrower probability of default' 
-                              : '✅ Decreases borrower probability of default'}
+                              ? 'Increases probability of default' 
+                              : 'Decreases probability of default'}
                           </p>
                         </div>
                       );
@@ -372,33 +346,35 @@ const RiskAssessmentDetails = () => {
                     return null;
                   }}
                 />
-                <ReferenceLine x={0} stroke="#475569" strokeWidth={1.5} />
+                <ReferenceLine x={0} stroke="#666666" strokeWidth={1} />
                 <Bar dataKey="value">
                   {shapChartData.map((entry, index) => (
                     <Cell 
                       key={`cell-${index}`} 
-                      fill={entry.value > 0 ? '#f43f5e' : '#10b981'} 
+                      fill={entry.value > 0 ? '#ffffff' : '#666666'} 
+                      stroke="#000000"
+                      strokeWidth={1}
                     />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-full flex items-center justify-center border border-dashed border-slate-800 rounded-lg">
-              <span className="text-slate-500 text-sm">Feature explanation generation failed. Verify SHAP library.</span>
+            <div className="h-full flex items-center justify-center border border-dashed border-neutral-900">
+              <span className="text-neutral-600 text-xs font-mono uppercase tracking-widest">No explanations data</span>
             </div>
           )}
         </div>
 
-        <div className="bg-slate-900/40 border border-slate-850 p-4 rounded-xl text-xs text-slate-400 leading-relaxed">
-          <span className="font-semibold text-slate-200 block mb-1">How to interpret this analysis:</span>
-          Each bar represents a feature's mathematical contribution to the XGBoost credit scoring booster.
-          <ul className="list-disc pl-5 mt-1.5 space-y-1">
+        <div className="bg-neutral-950 border border-neutral-900 p-4 text-[10px] text-neutral-500 leading-normal uppercase">
+          <span className="font-bold text-neutral-300 block mb-1">Interpretation:</span>
+          Each bar represents a feature's mathematical contribution to the XGBoost booster.
+          <ul className="list-disc pl-5 mt-1.5 space-y-1 text-neutral-600">
             <li>
-              <strong className="text-rose-400">Positive SHAP values (red bars)</strong> represent adverse risk factors (e.g., high debt ratios, low bureau scores) that pushed the probability of default higher, resulting in a lower credit score.
+              <strong className="text-white">Positive SHAP values (white bars)</strong> represent adverse risk factors that pushed default probability higher, resulting in a lower credit score.
             </li>
             <li>
-              <strong className="text-emerald-400">Negative SHAP values (green bars)</strong> represent favorable risk mitigators (e.g., higher bureau ratings, stable employment length) that lowered default probability, lifting the final scaled credit score.
+              <strong className="text-neutral-400">Negative SHAP values (gray bars)</strong> represent favorable risk mitigators that lowered default probability, lifting the final score.
             </li>
           </ul>
         </div>

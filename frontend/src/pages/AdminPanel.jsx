@@ -33,7 +33,6 @@ const AdminPanel = () => {
   const [logsError, setLogsError] = useState('');
   const [logFilter, setLogFilter] = useState('');
 
-  // Security Redirect: If not admin, bounce to dashboard
   useEffect(() => {
     if (!isAdmin()) {
       navigate('/');
@@ -50,7 +49,7 @@ const AdminPanel = () => {
       setLogs(data);
     } catch (err) {
       console.error(err);
-      setLogsError('Could not retrieve audit logs history.');
+      setLogsError('Could not retrieve audit logs.');
     } finally {
       setLogsLoading(false);
     }
@@ -64,14 +63,13 @@ const AdminPanel = () => {
     
     try {
       await authAPI.register(regForm);
-      setRegSuccess(`Account "${regForm.username}" registered successfully.`);
+      setRegSuccess(`Account "${regForm.username}" registered.`);
       setRegForm({
         username: '',
         email: '',
         password: '',
         role: 'ANALYST',
       });
-      // Refresh logs because registration adds an audit log
       fetchAuditLogs();
     } catch (err) {
       console.error(err);
@@ -81,7 +79,6 @@ const AdminPanel = () => {
     }
   };
 
-  // Filter logs based on search query
   const filteredLogs = logs.filter(log => 
     log.action.toLowerCase().includes(logFilter.toLowerCase()) ||
     log.details.toLowerCase().includes(logFilter.toLowerCase()) ||
@@ -89,60 +86,60 @@ const AdminPanel = () => {
   );
 
   return (
-    <div className="space-y-8 animate-fadeIn">
+    <div className="space-y-8 animate-fadeIn font-mono">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white tracking-tight font-sans">Administrative Center</h1>
-        <p className="text-slate-400 text-sm mt-1">Manage system user credentials and monitor evaluation audit logs.</p>
+      <div className="border-b border-neutral-900 pb-5">
+        <h1 className="text-2xl font-black text-white uppercase tracking-wider">Administrative Center</h1>
+        <p className="text-neutral-500 text-xs mt-1 uppercase tracking-widest">Manage system user credentials & audit logs</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Create User Form */}
-        <div className="glass-panel p-6 rounded-xl h-fit">
-          <h2 className="text-lg font-bold text-slate-100 mb-5 flex items-center gap-2 border-b border-slate-800 pb-3">
-            <UserPlus className="text-brand-accent w-5 h-5" />
+        <div className="glass-panel p-6 rounded-none border-neutral-800 h-fit">
+          <h2 className="text-xs font-bold text-white mb-5 uppercase tracking-widest flex items-center gap-2 border-b border-neutral-900 pb-3">
+            <UserPlus className="w-4 h-4" />
             Provision Credentials
           </h2>
 
           {regSuccess && (
-            <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 rounded-lg text-xs flex items-center gap-2">
+            <div className="mb-4 p-3 border border-white text-white bg-black text-xs flex items-center gap-2">
               <CheckCircle className="w-4 h-4 shrink-0" />
               <span>{regSuccess}</span>
             </div>
           )}
 
           {regError && (
-            <div className="mb-4 p-3 bg-rose-500/10 border border-rose-500/25 text-rose-400 rounded-lg text-xs flex items-center gap-2">
+            <div className="mb-4 p-3 border border-neutral-800 text-neutral-400 bg-black text-xs flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 shrink-0" />
               <span>{regError}</span>
             </div>
           )}
 
-          <form onSubmit={handleRegister} className="space-y-4 text-sm">
+          <form onSubmit={handleRegister} className="space-y-4 text-xs font-mono">
             <div>
-              <label className="form-label text-xs">Username</label>
+              <label className="form-label text-[10px]">Username</label>
               <input 
                 type="text" 
                 value={regForm.username}
                 onChange={(e) => setRegForm({...regForm, username: e.target.value})}
                 className="form-input text-xs py-2" 
-                placeholder="jdoe"
+                placeholder="USERNAME"
                 required 
               />
             </div>
             <div>
-              <label className="form-label text-xs">Email Address</label>
+              <label className="form-label text-[10px]">Email Address</label>
               <input 
                 type="email" 
                 value={regForm.email}
                 onChange={(e) => setRegForm({...regForm, email: e.target.value})}
                 className="form-input text-xs py-2" 
-                placeholder="jane.doe@bank.com"
+                placeholder="EMAIL@BANK.COM"
                 required 
               />
             </div>
             <div>
-              <label className="form-label text-xs">Temporary Password</label>
+              <label className="form-label text-[10px]">Temporary Password</label>
               <input 
                 type="password" 
                 value={regForm.password}
@@ -153,7 +150,7 @@ const AdminPanel = () => {
               />
             </div>
             <div>
-              <label className="form-label text-xs">Access Authority Role</label>
+              <label className="form-label text-[10px]">Access Authority Role</label>
               <select
                 value={regForm.role}
                 onChange={(e) => setRegForm({...regForm, role: e.target.value})}
@@ -167,7 +164,7 @@ const AdminPanel = () => {
 
             <button 
               type="submit" 
-              className="w-full btn-primary py-2 text-xs flex items-center justify-center gap-2 mt-2"
+              className="w-full btn-primary py-2.5 text-xs flex items-center justify-center gap-2 mt-2"
               disabled={regLoading}
             >
               {regLoading ? <Loader className="w-4 h-4 animate-spin" /> : <UserCheck className="w-4 h-4" />}
@@ -177,71 +174,59 @@ const AdminPanel = () => {
         </div>
 
         {/* Right Column: Audit Logs Table */}
-        <div className="lg:col-span-2 glass-panel p-6 rounded-xl flex flex-col h-[600px]">
-          <div className="border-b border-slate-800 pb-3 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-              <History className="text-brand-accent w-5 h-5" />
+        <div className="lg:col-span-2 glass-panel p-6 rounded-none border-neutral-800 flex flex-col h-[600px]">
+          <div className="border-b border-neutral-900 pb-3 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h2 className="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2">
+              <History className="w-4 h-4" />
               Security Audit Trails
             </h2>
-            {/* Log Search Filter */}
             <input 
               type="text" 
-              placeholder="Search audit logs..." 
+              placeholder="SEARCH AUDIT LOGS..." 
               value={logFilter}
               onChange={(e) => setLogFilter(e.target.value)}
-              className="bg-brand-panel border border-slate-800 rounded-lg px-3 py-1.5 text-xs placeholder-slate-500 text-slate-200 outline-none focus:ring-1 focus:ring-brand-accent/50 w-full sm:w-48"
+              className="bg-black border border-neutral-800 rounded-none px-3 py-1.5 text-xs placeholder-neutral-600 text-white outline-none focus:border-white w-full sm:w-48 uppercase"
             />
           </div>
 
           {/* Audit Logs Table */}
-          <div className="flex-1 overflow-y-auto border border-slate-800/80 rounded-lg">
+          <div className="flex-1 overflow-y-auto border border-neutral-900 rounded-none">
             {logsLoading ? (
               <div className="h-full flex flex-col items-center justify-center">
-                <Loader className="w-6 h-6 animate-spin text-brand-accent mb-2" />
-                <span className="text-slate-500 text-xs">Querying audit trail database...</span>
+                <Loader className="w-6 h-6 animate-spin text-white mb-2" />
+                <span className="text-neutral-600 text-[10px] uppercase font-bold tracking-widest">Querying audit logs...</span>
               </div>
             ) : logsError ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-4">
-                <ShieldAlert className="w-10 h-10 text-rose-500 mb-2" />
-                <span className="text-slate-400 text-xs">{logsError}</span>
+                <ShieldAlert className="w-10 h-10 text-white mb-2" />
+                <span className="text-neutral-500 text-xs">{logsError}</span>
               </div>
             ) : filteredLogs.length > 0 ? (
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-slate-900/60 text-slate-400 font-semibold border-b border-slate-800 sticky top-0 z-10">
+                  <tr className="bg-neutral-950 text-neutral-500 font-semibold border-b border-neutral-900 sticky top-0 z-10 uppercase tracking-wider">
                     <th className="px-4 py-3">Timestamp</th>
                     <th className="px-4 py-3">Operator</th>
                     <th className="px-4 py-3">Category</th>
                     <th className="px-4 py-3">Audit Details</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-850">
+                <tbody className="divide-y divide-neutral-900">
                   {filteredLogs.map((log) => {
-                    let roleBadgeColor = "bg-slate-500/10 border-slate-500/20 text-slate-400";
-                    let actionColor = "text-slate-300";
-                    
-                    if (log.action.includes("ASSESSMENT")) {
-                      actionColor = "text-brand-accent font-semibold";
-                    } else if (log.action.includes("LOGIN")) {
-                      actionColor = "text-brand-emerald";
-                    } else if (log.action.includes("DELETED")) {
-                      actionColor = "text-brand-rose";
-                    }
-
                     return (
-                      <tr key={log.id} className="hover:bg-slate-800/10 transition-colors">
-                        <td className="px-4 py-3 text-slate-400 font-mono">
+                      <tr key={log.id} className="hover:bg-neutral-950 transition-colors">
+                        <td className="px-4 py-3 text-neutral-500 font-mono">
                           {new Date(log.timestamp).toLocaleString()}
                         </td>
-                        <td className="px-4 py-3 font-semibold text-slate-300">
+                        <td className="px-4 py-3 font-bold text-white uppercase">
                           {log.username}
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`font-mono text-[10px] uppercase ${actionColor}`}>
+                          <span className="font-mono text-[9px] uppercase font-bold text-neutral-300">
                             {log.action}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-slate-400 leading-normal">
+                        <td className="px-4 py-3 text-neutral-400 leading-normal uppercase">
                           {log.details}
                         </td>
                       </tr>
@@ -250,8 +235,8 @@ const AdminPanel = () => {
                 </tbody>
               </table>
             ) : (
-              <div className="h-full flex items-center justify-center text-slate-500 text-xs">
-                No security transactions logged matching filters.
+              <div className="h-full flex items-center justify-center text-neutral-600 text-xs uppercase tracking-widest">
+                No logs matching filters.
               </div>
             )}
           </div>
