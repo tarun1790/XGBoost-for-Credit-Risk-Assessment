@@ -32,7 +32,7 @@ jobs:
 
     - name: Test with pytest
       env:
-        DATABASE_URL: sqlite+aiosqlite:///:memory: # Fallback in-memory database for testing
+        DATABASE_URL: "sqlite+aiosqlite:///:memory:"
       run: |
         pip install pytest httpx aiosqlite
         # Run backend pytest tests
@@ -43,11 +43,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up Node.js 18
-      uses: actions/setup-python@v4 # fallback placeholder
-      # uses: actions/setup-node@v3
-      # Note: We will use checkout and node setup standard commands
-    
     - name: Setup Node
       uses: actions/setup-node@v3
       with:

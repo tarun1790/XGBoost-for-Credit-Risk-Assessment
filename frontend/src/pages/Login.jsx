@@ -48,14 +48,16 @@ const Login = () => {
       <div className="h-screen w-full flex flex-col justify-center items-center bg-black relative px-4">
         
         {/* Large Luffy letter space, Risk management tight fit */}
-        <div className="text-center space-y-2 max-w-4xl">
-          <h1 className="text-[14vw] md:text-[10rem] font-extrabold tracking-[0.4em] pl-[0.4em] leading-none text-white uppercase select-none">
+        <div className="w-fit mx-auto flex flex-col items-stretch space-y-2">
+          <h1 className="text-[14vw] md:text-[10rem] font-extrabold tracking-[0.4em] mr-[-0.4em] leading-none text-white uppercase select-none text-center">
             LUFFY
           </h1>
           <div className="border-t border-white pt-3">
-            <p className="text-base md:text-xl font-bold tracking-normal uppercase text-neutral-300">
-              RISK MANAGEMENT
-            </p>
+            <svg viewBox="0 0 120 12" className="w-full fill-current text-neutral-300">
+              <text x="0" y="10" fontSize="10" fontWeight="900" textLength="120" lengthAdjust="spacingAndGlyphs">
+                RISK MANAGEMENT
+              </text>
+            </svg>
           </div>
         </div>
 
