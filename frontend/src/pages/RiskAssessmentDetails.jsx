@@ -166,12 +166,30 @@ const RiskAssessmentDetails = () => {
       {/* Main Grid: Score Gauge and Details */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Credit Score gauge Card */}
-        <div className="glass-panel p-6 rounded-none flex flex-col items-center justify-center text-center space-y-5 border-neutral-800">
+        <div className="glass-panel p-6 rounded-none flex flex-col items-center justify-center text-center space-y-5 border-neutral-800 relative overflow-hidden">
+          {/* Futuristic Corner Brackets */}
+          <div className="absolute top-2 left-2 w-3.5 h-3.5 border-t-2 border-l-2 border-neutral-800" />
+          <div className="absolute top-2 right-2 w-3.5 h-3.5 border-t-2 border-r-2 border-neutral-800" />
+          <div className="absolute bottom-2 left-2 w-3.5 h-3.5 border-b-2 border-l-2 border-neutral-800" />
+          <div className="absolute bottom-2 right-2 w-3.5 h-3.5 border-b-2 border-r-2 border-neutral-800" />
+
           <h3 className="text-neutral-500 text-[10px] font-bold uppercase tracking-wider">Credit Rating Scorecard</h3>
           
-          {/* Animated SVG Circle Progress Gauge */}
+          {/* Animated SVG Circle Progress Gauge with Tech HUD Overlay */}
           <div className="relative flex items-center justify-center w-52 h-52">
             <svg className="w-full h-full -rotate-90">
+              {/* Outer tick ring */}
+              <circle cx="104" cy="104" r={radius + 12} stroke="#1f1f1f" strokeWidth="1.5" strokeDasharray="3 5" fill="transparent" />
+              {/* Inner tick ring */}
+              <circle cx="104" cy="104" r={radius - 12} stroke="#111111" strokeWidth="3" strokeDasharray="1 8" fill="transparent" />
+              
+              {/* Grid crosshair guides */}
+              <line x1="104" y1="5" x2="104" y2="15" stroke="#262626" strokeWidth="1" />
+              <line x1="104" y1="193" x2="104" y2="203" stroke="#262626" strokeWidth="1" />
+              <line x1="5" y1="104" x2="15" y2="104" stroke="#262626" strokeWidth="1" />
+              <line x1="193" y1="104" x2="203" y2="104" stroke="#262626" strokeWidth="1" />
+
+              {/* Main gauge track */}
               <circle
                 cx="104"
                 cy="104"
@@ -180,6 +198,7 @@ const RiskAssessmentDetails = () => {
                 strokeWidth={strokeWidth}
                 fill="transparent"
               />
+              {/* Main progress gauge */}
               <circle
                 cx="104"
                 cy="104"
@@ -208,11 +227,11 @@ const RiskAssessmentDetails = () => {
           </div>
 
           <div className="w-full grid grid-cols-2 gap-3 text-xs">
-            <div className="bg-black border border-neutral-850 p-3 rounded-none flex flex-col">
+            <div className="bg-black border border-neutral-850 p-3 rounded-none flex flex-col items-start">
               <span className="text-neutral-500 text-[9px] font-bold uppercase tracking-wider">Default Prob (PD)</span>
               <span className="text-base font-bold text-white mt-1">{pdPercent}%</span>
             </div>
-            <div className="bg-black border border-neutral-850 p-3 rounded-none flex flex-col">
+            <div className="bg-black border border-neutral-850 p-3 rounded-none flex flex-col items-start">
               <span className="text-neutral-500 text-[9px] font-bold uppercase tracking-wider">Approval</span>
               <span className="text-base font-bold text-white mt-1">
                 {credit_score >= 600 ? 'APPROVED' : 'DECLINED'}

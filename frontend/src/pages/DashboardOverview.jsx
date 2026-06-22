@@ -61,17 +61,17 @@ const DashboardOverview = () => {
     );
   }
 
-  // Monochrome colors for Risk tiers
-  const pieData = summary ? [
-    { name: 'Low Risk', value: summary.risk_distribution.low, color: '#ffffff' },       
-    { name: 'Medium-Low', value: summary.risk_distribution.medium_low, color: '#cccccc' }, 
-    { name: 'Medium Risk', value: summary.risk_distribution.medium, color: '#777777' },    
-    { name: 'High Risk', value: summary.risk_distribution.high, color: '#222222' }       
-  ].filter(item => item.value > 0) : [];
+  // Calculate monochrome percentages for the custom concentric SVG ring scanner
+  const totalAssessments = summary?.total_assessments || 0;
+  const pLow = totalAssessments > 0 ? ((summary?.risk_distribution?.low || 0) / totalAssessments) * 100 : 0;
+  const pMedLow = totalAssessments > 0 ? ((summary?.risk_distribution?.medium_low || 0) / totalAssessments) * 100 : 0;
+  const pMed = totalAssessments > 0 ? ((summary?.risk_distribution?.medium || 0) / totalAssessments) * 100 : 0;
+  const pHigh = totalAssessments > 0 ? ((summary?.risk_distribution?.high || 0) / totalAssessments) * 100 : 0;
 
-  const chartData = pieData.length > 0 ? pieData : [
-    { name: 'No Assessments', value: 1, color: '#111111' }
-  ];
+  const lowCount = summary?.risk_distribution?.low || 0;
+  const medLowCount = summary?.risk_distribution?.medium_low || 0;
+  const medCount = summary?.risk_distribution?.medium || 0;
+  const highCount = summary?.risk_distribution?.high || 0;
 
   return (
     <div className="space-y-8 animate-fadeIn font-mono bg-black">
@@ -171,7 +171,12 @@ const DashboardOverview = () => {
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Trend Area Chart */}
-        <div className="lg:col-span-2 glass-panel p-6 rounded-none border-neutral-800 space-y-4">
+        <div className="lg:col-span-2 glass-panel p-6 rounded-none border-neutral-800 space-y-4 relative overflow-hidden">
+          <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-neutral-800" />
+          <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-neutral-800" />
+          <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-neutral-800" />
+          <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-neutral-800" />
+          
           <div>
             <h4 className="text-sm font-bold text-white uppercase tracking-wider">Scoring Calibration History</h4>
             <p className="text-neutral-500 text-[10px] uppercase tracking-wider">Mean credit ratings evaluated over dates</p>
@@ -182,18 +187,19 @@ const DashboardOverview = () => {
                 <AreaChart data={summary.history} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#ffffff" stopOpacity={0.15}/>
+                      <stop offset="5%" stopColor="#ffffff" stopOpacity={0.12}/>
                       <stop offset="95%" stopColor="#ffffff" stopOpacity={0.0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#222222" />
-                  <XAxis dataKey="date" stroke="#666666" fontSize={10} tickLine={false} />
-                  <YAxis domain={[300, 850]} stroke="#666666" fontSize={10} tickLine={false} />
+                  <CartesianGrid strokeDasharray="none" stroke="#111111" />
+                  <XAxis dataKey="date" stroke="#444444" fontSize={10} tickLine={false} />
+                  <YAxis domain={[300, 850]} stroke="#444444" fontSize={10} tickLine={false} />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#000000', borderColor: '#ffffff', color: '#ffffff' }}
-                    labelStyle={{ color: '#888888', fontfamily: 'monospace', fontWeight: 'bold', fontSize: 11 }}
+                    contentStyle={{ backgroundColor: '#000000', borderColor: '#ffffff', color: '#ffffff', fontFamily: 'monospace' }}
+                    labelStyle={{ color: '#888888', fontfamily: 'monospace', fontWeight: 'bold', fontSize: 10 }}
                   />
-                  <Area type="monotone" dataKey="avg_score" name="Avg Credit Score" stroke="#ffffff" strokeWidth={1.5} fillOpacity={1} fill="url(#colorScore)" />
+                  <ReferenceLine y={600} stroke="#333333" strokeDasharray="3 3" label={{ value: "APPROVAL LIMIT (600)", fill: "#666666", fontSize: 8, position: "top", fontFamily: 'monospace' }} />
+                  <Area type="step" dataKey="avg_score" name="Avg Credit Score" stroke="#ffffff" strokeWidth={2} fillOpacity={1} fill="url(#colorScore)" />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
@@ -205,66 +211,98 @@ const DashboardOverview = () => {
         </div>
 
         {/* Risk Distribution Chart */}
-        <div className="glass-panel p-6 rounded-none border-neutral-800 flex flex-col justify-between space-y-4">
+        <div className="glass-panel p-6 rounded-none border-neutral-800 flex flex-col justify-between space-y-4 relative overflow-hidden">
+          <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-neutral-800" />
+          <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-neutral-800" />
+          <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-neutral-800" />
+          <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-neutral-800" />
+          
           <div>
             <h4 className="text-sm font-bold text-white uppercase tracking-wider">Risk Profile Breakdown</h4>
-            <p className="text-neutral-500 text-[10px] uppercase tracking-wider">Borrowers group split</p>
+            <p className="text-neutral-500 text-[10px] uppercase tracking-wider">Concentric Ring Radar Telemetry</p>
           </div>
           
           <div className="h-56 relative flex items-center justify-center">
             {summary?.total_assessments > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={3}
-                    dataKey="value"
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} stroke="#000000" strokeWidth={2} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#000000', borderColor: '#ffffff', color: '#ffffff' }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+              <div className="relative w-48 h-48 flex items-center justify-center">
+                {/* Custom Concentric SVG Radar Ring Scanner */}
+                <svg viewBox="0 0 240 240" className="w-full h-full">
+                  {/* Background crosshair grid markings */}
+                  <line x1="120" y1="10" x2="120" y2="230" stroke="#141414" strokeWidth="1" strokeDasharray="2 3" />
+                  <line x1="10" y1="120" x2="270" y2="120" stroke="#141414" strokeWidth="1" strokeDasharray="2 3" />
+                  
+                  {/* Concentric Circle Guides */}
+                  <circle cx="120" cy="120" r="45" fill="none" stroke="#111111" strokeWidth="1" strokeDasharray="2 4" />
+                  <circle cx="120" cy="120" r="62" fill="none" stroke="#111111" strokeWidth="1" strokeDasharray="2 4" />
+                  <circle cx="120" cy="120" r="79" fill="none" stroke="#111111" strokeWidth="1" strokeDasharray="2 4" />
+                  <circle cx="120" cy="120" r="96" fill="none" stroke="#111111" strokeWidth="1" strokeDasharray="2 4" />
+
+                  {/* Low Risk Ring (radius 45) */}
+                  <circle cx="120" cy="120" r="45" fill="none" stroke="#141414" strokeWidth="4.5" />
+                  {pLow > 0 && (
+                    <circle cx="120" cy="120" r="45" fill="none" stroke="#ffffff" strokeWidth="4.5"
+                      strokeDasharray={2 * Math.PI * 45} strokeDashoffset={2 * Math.PI * 45 - (pLow / 100) * (2 * Math.PI * 45)}
+                      strokeLinecap="square" className="transition-all duration-1000 ease-out" transform="rotate(-90 120 120)" />
+                  )}
+
+                  {/* Medium-Low Ring (radius 62) */}
+                  <circle cx="120" cy="120" r="62" fill="none" stroke="#141414" strokeWidth="4.5" />
+                  {pMedLow > 0 && (
+                    <circle cx="120" cy="120" r="62" fill="none" stroke="#a3a3a3" strokeWidth="4.5"
+                      strokeDasharray={2 * Math.PI * 62} strokeDashoffset={2 * Math.PI * 62 - (pMedLow / 100) * (2 * Math.PI * 62)}
+                      strokeLinecap="square" className="transition-all duration-1000 ease-out" transform="rotate(-90 120 120)" />
+                  )}
+
+                  {/* Medium Ring (radius 79) */}
+                  <circle cx="120" cy="120" r="79" fill="none" stroke="#141414" strokeWidth="4.5" />
+                  {pMed > 0 && (
+                    <circle cx="120" cy="120" r="79" fill="none" stroke="#525252" strokeWidth="4.5"
+                      strokeDasharray={2 * Math.PI * 79} strokeDashoffset={2 * Math.PI * 79 - (pMed / 100) * (2 * Math.PI * 79)}
+                      strokeLinecap="square" className="transition-all duration-1000 ease-out" transform="rotate(-90 120 120)" />
+                  )}
+
+                  {/* High Risk Ring (radius 96) */}
+                  <circle cx="120" cy="120" r="96" fill="none" stroke="#141414" strokeWidth="4.5" />
+                  {pHigh > 0 && (
+                    <circle cx="120" cy="120" r="96" fill="none" stroke="#ffffff" strokeWidth="4.5" strokeDasharray="2 3"
+                      strokeDashoffset={2 * Math.PI * 96 - (pHigh / 100) * (2 * Math.PI * 96)}
+                      strokeLinecap="square" className="transition-all duration-1000 ease-out" transform="rotate(-90 120 120)" />
+                  )}
+                  
+                  {/* Center Hub */}
+                  <circle cx="120" cy="120" r="28" fill="#000000" stroke="#222222" strokeWidth="1" />
+                </svg>
+                
+                {/* Center score readout */}
+                <div className="absolute flex flex-col items-center justify-center font-mono pointer-events-none">
+                  <span className="text-xl font-black text-white">{summary.total_assessments}</span>
+                  <span className="text-[8px] text-neutral-500 font-bold uppercase tracking-wider">Reports</span>
+                </div>
+              </div>
             ) : (
               <div className="w-32 h-32 rounded-full border border-neutral-800 flex items-center justify-center">
                 <span className="text-neutral-600 text-[10px] font-bold uppercase tracking-wider">Empty</span>
               </div>
             )}
-            
-            {/* Center score indicator */}
-            {summary?.total_assessments > 0 && (
-              <div className="absolute flex flex-col items-center justify-center font-mono">
-                <span className="text-2xl font-black text-white">{summary.total_assessments}</span>
-                <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider">Reports</span>
-              </div>
-            )}
           </div>
 
           {/* Legend Grid */}
-          <div className="grid grid-cols-2 gap-2 text-[10px] pt-4 border-t border-neutral-900 font-mono">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 border border-neutral-700 bg-white shrink-0" />
-              <span className="text-neutral-400 truncate">Low Risk: <span className="font-bold text-white">{summary?.risk_distribution.low || 0}</span></span>
+          <div className="grid grid-cols-2 gap-3 text-[10px] pt-4 border-t border-neutral-900 font-mono">
+            <div className="flex flex-col border-l-2 border-white pl-2">
+              <span className="text-neutral-500 uppercase font-bold tracking-wider">LOW RISK [I]</span>
+              <span className="text-white text-xs font-black mt-0.5">{lowCount} ({pLow.toFixed(1)}%)</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 border border-neutral-700 bg-neutral-300 shrink-0" />
-              <span className="text-neutral-400 truncate">Good: <span className="font-bold text-white">{summary?.risk_distribution.medium_low || 0}</span></span>
+            <div className="flex flex-col border-l-2 border-neutral-450 pl-2">
+              <span className="text-neutral-500 uppercase font-bold tracking-wider">GOOD [II]</span>
+              <span className="text-neutral-300 text-xs font-black mt-0.5">{medLowCount} ({pMedLow.toFixed(1)}%)</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 border border-neutral-700 bg-neutral-600 shrink-0" />
-              <span className="text-neutral-400 truncate">Fair: <span className="font-bold text-white">{summary?.risk_distribution.medium || 0}</span></span>
+            <div className="flex flex-col border-l-2 border-neutral-600 pl-2">
+              <span className="text-neutral-500 uppercase font-bold tracking-wider">FAIR [III]</span>
+              <span className="text-neutral-450 text-xs font-black mt-0.5">{medCount} ({pMed.toFixed(1)}%)</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 border border-neutral-700 bg-neutral-850 shrink-0" />
-              <span className="text-neutral-400 truncate">Poor: <span className="font-bold text-white">{summary?.risk_distribution.high || 0}</span></span>
+            <div className="flex flex-col border-l-2 border-white border-dashed pl-2">
+              <span className="text-neutral-500 uppercase font-bold tracking-wider">POOR [IV]</span>
+              <span className="text-neutral-500 text-xs font-black mt-0.5">{highCount} ({pHigh.toFixed(1)}%)</span>
             </div>
           </div>
         </div>
