@@ -77,12 +77,8 @@ const Layout = ({ children }) => {
             <h1 className="text-7xl md:text-[9rem] font-black tracking-[0.35em] mr-[-0.35em] leading-none text-white uppercase select-none text-center">
               LUFFY
             </h1>
-            <div className="border-t border-white mt-4 pt-3">
-              <svg viewBox="0 0 120 12" className="w-full fill-current text-neutral-300">
-                <text x="0" y="10" fontSize="10" fontWeight="900" textLength="120" lengthAdjust="spacingAndGlyphs">
-                  RISK MANAGEMENT
-                </text>
-              </svg>
+            <div className="border-t border-white mt-4 pt-2 text-center text-2xl md:text-5xl font-bold text-neutral-300 select-none leading-none pb-2" style={{ fontFamily: "'Dancing Script', cursive" }}>
+              Risk Management
             </div>
           </div>
 

@@ -52,12 +52,8 @@ const Login = () => {
           <h1 className="text-[14vw] md:text-[10rem] font-extrabold tracking-[0.4em] mr-[-0.4em] leading-none text-white uppercase select-none text-center">
             LUFFY
           </h1>
-          <div className="border-t border-white pt-3">
-            <svg viewBox="0 0 120 12" className="w-full fill-current text-neutral-300">
-              <text x="0" y="10" fontSize="10" fontWeight="900" textLength="120" lengthAdjust="spacingAndGlyphs">
-                RISK MANAGEMENT
-              </text>
-            </svg>
+          <div className="border-t border-white pt-2 text-center text-[5.5vw] md:text-5xl font-bold text-neutral-300 select-none leading-none pb-2" style={{ fontFamily: "'Dancing Script', cursive" }}>
+            Risk Management
           </div>
         </div>
 
