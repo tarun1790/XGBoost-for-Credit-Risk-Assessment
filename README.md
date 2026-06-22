@@ -3,7 +3,7 @@
 > [!NOTE]
 > **Internship Project Metadata**
 > - **Intern Name**: Jampani Tarun Sai
-> - **Intern ID**: CT-655
+> - **Intern ID**: CITS1344
 > - **Internship Duration**: 12 Weeks
 
 Luffy Risk Management is a production-ready, explainable AI (XAI) credit risk assessment platform. It uses **FastAPI**, **React.js (with Tailwind CSS)**, **PostgreSQL**, and **XGBoost** to automate credit scorecard modeling and evaluate borrower default risk. 
