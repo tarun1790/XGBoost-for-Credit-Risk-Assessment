@@ -22,3 +22,7 @@ dist/
 .vscode/
 .idea/
 Thumbs.db
+
+# Databases
+*.db
+*.sqlite3
