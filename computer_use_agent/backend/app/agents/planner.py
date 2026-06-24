@@ -1,11 +1,10 @@
 import json
-import httpx
 from app.core.config import settings
+from app.services.llm_service import model_service
 
 class ExecutivePlanner:
     def __init__(self):
-        self.ollama_url = f"{settings.OLLAMA_BASE_URL}/api/generate"
-        self.model_name = settings.OLLAMA_MODEL
+        pass
 
     async def plan_task(self, goal: str, context_notes: str = "") -> list:
         """
@@ -30,23 +29,18 @@ class ExecutivePlanner:
         """
         
         try:
-            async with httpx.AsyncClient(timeout=15.0) as client:
-                response = await client.post(
-                    self.ollama_url,
-                    json={
-                        "model": self.model_name,
-                        "prompt": prompt,
-                        "stream": False,
-                        "format": "json"
-                    }
-                )
-                if response.status_code == 200:
-                    result = response.json()
-                    plan_data = json.loads(result.get("response", "[]"))
-                    if isinstance(plan_data, list) and len(plan_data) > 0:
-                        return plan_data
+            response_text = await model_service.generate(prompt)
+            # Find the JSON list in the output (some LLMs might surround it with markdown codeblocks)
+            if "```json" in response_text:
+                response_text = response_text.split("```json")[1].split("```")[0].strip()
+            elif "```" in response_text:
+                response_text = response_text.split("```")[1].split("```")[0].strip()
+            
+            plan_data = json.loads(response_text)
+            if isinstance(plan_data, list) and len(plan_data) > 0:
+                return plan_data
         except Exception as e:
-            print(f"Ollama Planner failed: {e}. Using deterministic plan rule fallback.")
+            print(f"Hugging Face Planner failed: {e}. Using deterministic plan rule fallback.")
             
         # Deterministic rule-based fallback planner for testing
         return self._generate_fallback_plan(goal)

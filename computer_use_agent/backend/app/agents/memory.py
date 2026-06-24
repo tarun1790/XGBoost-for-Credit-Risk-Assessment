@@ -4,12 +4,22 @@ from datetime import datetime
 from typing import Any
 from app.core.config import settings
 
-# Attempt to load ChromaDB, with a dictionary-based fallback if compilation fails
+# Attempt to load ChromaDB
 try:
     import chromadb
     HAS_CHROMA = True
 except Exception:
     HAS_CHROMA = False
+
+# Attempt to load FAISS and SentenceTransformers
+HAS_FAISS = False
+try:
+    import faiss
+    import numpy as np
+    from sentence_transformers import SentenceTransformer
+    HAS_FAISS = True
+except Exception:
+    pass
 
 class MemoryAgent:
     def __init__(self):
@@ -19,7 +29,11 @@ class MemoryAgent:
         
         self.client = None
         self.collection = None
+        self.embed_model = None
+        self.faiss_index = None
+        self.faiss_metadata = []
         
+        # Load ChromaDB
         if HAS_CHROMA:
             try:
                 self.client = chromadb.PersistentClient(path=self.chroma_dir)
@@ -28,7 +42,19 @@ class MemoryAgent:
                 print(f"[Warning] Failed to start ChromaDB client: {e}. Fallback to JSON memory.")
                 self.client = None
                 
-        if not self.client:
+        # Load SentenceTransformers and FAISS
+        if HAS_FAISS:
+            try:
+                print(f"Loading local embedding model: {settings.HF_EMBEDDING_MODEL}...")
+                self.embed_model = SentenceTransformer(settings.HF_EMBEDDING_MODEL)
+                # MiniLM-L6-v2 uses 384 dimensions
+                self.faiss_index = faiss.IndexFlatL2(384)
+                print("FAISS Index initialized successfully!")
+            except Exception as e:
+                print(f"[Warning] Failed to initialize FAISS: {e}")
+                self.faiss_index = None
+                
+        if not self.client and not self.faiss_index:
             self._init_fallback_db()
 
     def _init_fallback_db(self):
@@ -61,6 +87,20 @@ class MemoryAgent:
             "timestamp": datetime.utcnow().isoformat()
         }
         
+        # Save to FAISS index
+        if HAS_FAISS and self.faiss_index and self.embed_model:
+            try:
+                embedding = self.embed_model.encode([task_goal])[0]
+                vector = np.array([embedding], dtype=np.float32)
+                self.faiss_index.add(vector)
+                self.faiss_metadata.append({
+                    "goal": task_goal,
+                    "actions": action_sequence,
+                    "is_success": is_success
+                })
+            except Exception as e:
+                print(f"FAISS add failed: {e}")
+
         # Save to Chroma Vector DB if available
         if self.client and self.collection:
             try:
@@ -88,15 +128,32 @@ class MemoryAgent:
         """
         Queries memory to retrieve historical sequences matching the target task.
         """
+        # Retrieve via FAISS first
+        if HAS_FAISS and self.faiss_index and self.faiss_index.ntotal > 0 and self.embed_model:
+            try:
+                embedding = self.embed_model.encode([current_goal])[0]
+                query_vector = np.array([embedding], dtype=np.float32)
+                # Find top 2 nearest matches
+                distances, indices = self.faiss_index.search(query_vector, 2)
+                matches = []
+                for idx in indices[0]:
+                    if idx != -1 and idx < len(self.faiss_metadata):
+                        match = self.faiss_metadata[idx]
+                        if match["is_success"]:
+                            matches.append(match["actions"])
+                if matches:
+                    return matches
+            except Exception as e:
+                print(f"FAISS search failed: {e}")
+
+        # Retrieve via ChromaDB
         if self.client and self.collection:
             try:
-                # Query Chroma using goal text
                 results = self.collection.query(
                     query_texts=[current_goal],
                     n_results=2
                 )
                 if results and results["documents"] and len(results["documents"][0]) > 0:
-                    # Return parsed JSON documents list
                     return [json.loads(doc) for doc in results["documents"][0]]
             except Exception as e:
                 print(f"Chroma query error: {e}. Searching fallback.")

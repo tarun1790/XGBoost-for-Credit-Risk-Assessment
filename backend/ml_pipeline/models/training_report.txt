@@ -1,0 +1,26 @@
+==============================================================
+  Model Evaluation Report
+==============================================================
+  ROC-AUC (raw)         : 0.7004
+  ROC-AUC (calibrated)  : 0.7004
+  Gini coefficient      : 0.4008
+  KS statistic          : 0.3023
+  Brier score           : 0.1280
+
+  Classification Report (threshold = 0.50):
+              precision    recall  f1-score   support
+
+           0       0.84      1.00      0.91      8352
+           1       0.45      0.01      0.01      1648
+
+    accuracy                           0.83     10000
+   macro avg       0.64      0.50      0.46     10000
+weighted avg       0.77      0.83      0.76     10000
+
+  Confusion Matrix:
+[[8341   11]
+ [1639    9]]
+
+  Total training time   : 3.0s
+==============================================================
+    CV ROC-AUC: 0.6999 ± 0.0101  (folds: 0.7077, 0.7033, 0.6951, 0.6826, 0.7107)
