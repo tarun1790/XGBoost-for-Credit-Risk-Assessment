@@ -168,15 +168,68 @@ class MLService:
         feature_names = self.metadata['feature_names']
         shap_dict = dict(zip(feature_names, [float(v) for v in shap_vals]))
         
-        # Sort and filter features with significant impact to return
-        # But we return all of them so the frontend can choose what to show
+        # Quantitative Risk Analytics (Basel III IRB, IFRS 9 ECL, RAROC)
+        from backend.app.services.quant_service import quant_service
+        has_realty = raw_data.get("FLAG_OWN_REALTY", "N") == "Y"
+        has_car = raw_data.get("FLAG_OWN_CAR", "N") == "Y"
+        car_age = raw_data.get("OWN_CAR_AGE")
+        amt_credit = float(raw_data.get("AMT_CREDIT", 100000.0))
+        is_revolving = raw_data.get("NAME_CONTRACT_TYPE") == "Revolving loans"
+
+        # 1. LGD & EAD
+        lgd = quant_service.estimate_lgd(has_realty, has_car, car_age)
+        ead = quant_service.estimate_ead(amt_credit, is_revolving=is_revolving)
+
+        # 2. Basel III IRB Capital & RWA
+        basel_metrics = quant_service.compute_basel_capital(pd_prob, lgd, ead, is_revolving=is_revolving)
         
+        # 3. Rating Grade & Staging
+        rating_grade = quant_service.assign_rating_grade(pd_prob, credit_score)
+        ifrs9_metrics = quant_service.calculate_ifrs9_staging(pd_prob, lgd, ead)
+
+        # 4. RAROC & Loan Pricing
+        pricing_metrics = quant_service.calculate_raroc_and_pricing(
+            pd_prob, lgd, ead, basel_metrics["capital_charge_k"]
+        )
+
+        # 5. Stressed PD under CCAR Severely Adverse scenario
+        stress_single = quant_service.run_macro_stress_test(
+            [pd_prob], [lgd], [ead],
+            delta_gdp_pct=-3.5, delta_unemployment_pct=4.0, delta_rate_bps=200.0, delta_hpi_pct=-15.0
+        )
+        stressed_pd = stress_single["stressed"]["avg_pd"]
+
+        # 6. Multi-year rating migration probabilities
+        term_structure = quant_service.compute_multi_year_transition(years=3)
+
+        quant_summary = {
+            "basel_metrics": basel_metrics,
+            "ifrs9_metrics": ifrs9_metrics,
+            "pricing_metrics": pricing_metrics,
+            "stressed_pd_severely_adverse": stressed_pd,
+            "cumulative_3yr_default_prob": term_structure["cumulative_default_probabilities"].get(rating_grade, pd_prob * 2.5),
+            "lgd": lgd,
+            "ead": ead
+        }
+
         return {
             "probability_of_default": pd_prob,
             "credit_score": credit_score,
             "risk_category": risk_category,
-            "shap_explanations": shap_dict
+            "shap_explanations": shap_dict,
+            "lgd": lgd,
+            "ead": ead,
+            "expected_loss": basel_metrics["expected_loss"],
+            "regulatory_capital": basel_metrics["min_regulatory_capital"],
+            "rwa": basel_metrics["rwa"],
+            "economic_capital": pricing_metrics["economic_capital"],
+            "ifrs9_stage": ifrs9_metrics["stage"],
+            "rating_grade": rating_grade,
+            "recommended_spread_bps": pricing_metrics["recommended_spread_bps"],
+            "raroc_pct": pricing_metrics["current_market_raroc_pct"],
+            "quant_metrics": quant_summary
         }
 
 # Singleton instance
 ml_service = MLService()
+

@@ -114,4 +114,31 @@ export const dashboardAPI = {
   },
 };
 
+export const quantAPI = {
+  getPortfolioSummary: async () => {
+    const response = await api.get('/quant/portfolio-summary');
+    return response.data;
+  },
+  runSimulation: async (numSimulations = 50000) => {
+    const response = await api.post('/quant/portfolio-simulation', {
+      num_simulations: numSimulations,
+    });
+    return response.data;
+  },
+  runStressTest: async (shocks) => {
+    const response = await api.post('/quant/stress-test', shocks);
+    return response.data;
+  },
+  priceLoan: async (pricingParams) => {
+    const response = await api.post('/quant/price-loan', pricingParams);
+    return response.data;
+  },
+  getTransitionMatrix: async (years = 1) => {
+    const response = await api.get('/quant/transition-matrix', {
+      params: { tenure_years: years },
+    });
+    return response.data;
+  },
+};
+
 export default api;

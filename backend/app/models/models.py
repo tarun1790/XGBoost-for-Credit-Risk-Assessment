@@ -66,6 +66,18 @@ class Prediction(Base):
     credit_score = Column(Integer, nullable=False)
     risk_category = Column(String, nullable=False)
     shap_explanations = Column(JSON, nullable=False) # Stores feature contribution scores
+    
+    # Quantitative Risk & Basel III / IFRS 9 Fields
+    lgd = Column(Float, nullable=True, default=0.45)
+    ead = Column(Float, nullable=True, default=0.0)
+    expected_loss = Column(Float, nullable=True, default=0.0)
+    regulatory_capital = Column(Float, nullable=True, default=0.0)
+    rwa = Column(Float, nullable=True, default=0.0)
+    economic_capital = Column(Float, nullable=True, default=0.0)
+    ifrs9_stage = Column(String, nullable=True, default="Stage 1 (Performing)")
+    rating_grade = Column(String, nullable=True, default="BBB")
+    quant_metrics = Column(JSON, nullable=True) # Full quantitative analysis breakdown
+    
     assessed_by = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     assessed_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     

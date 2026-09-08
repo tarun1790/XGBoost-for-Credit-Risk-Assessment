@@ -8,7 +8,7 @@ from backend.app.core.db import engine, Base, AsyncSessionLocal
 from backend.app.core.security import get_password_hash
 from backend.app.models.models import User, Customer
 from backend.app.services.ml_service import ml_service
-from backend.app.api.v1 import auth, customers, predictions, dashboard
+from backend.app.api.v1 import auth, customers, predictions, dashboard, quant
 
 async def seed_data():
     """Create database tables if they do not exist and seed initial system accounts & test customers."""
@@ -163,6 +163,7 @@ app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["Aut
 app.include_router(customers.router, prefix=f"{settings.API_V1_STR}/customers", tags=["Customers"])
 app.include_router(predictions.router, prefix=f"{settings.API_V1_STR}/predict", tags=["Predictions"])
 app.include_router(dashboard.router, prefix=f"{settings.API_V1_STR}/dashboard", tags=["Dashboard"])
+app.include_router(quant.router, prefix=f"{settings.API_V1_STR}/quant", tags=["Quantitative Risk & Capital"])
 
 @app.get("/")
 def read_root():

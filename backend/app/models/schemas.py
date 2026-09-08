@@ -75,6 +75,7 @@ class CustomerResponse(CustomerBase):
         from_attributes = True
 
 # --- PREDICTION SCHEMAS ---
+# --- PREDICTION SCHEMAS ---
 class PredictionResponse(BaseModel):
     id: UUID
     customer_id: UUID
@@ -85,9 +86,62 @@ class PredictionResponse(BaseModel):
     assessed_by: Optional[UUID] = None
     assessed_at: datetime
     customer: Optional[CustomerResponse] = None
+
+    # Quantitative Risk & Basel III / IFRS 9 attributes
+    lgd: Optional[float] = 0.45
+    ead: Optional[float] = 0.0
+    expected_loss: Optional[float] = 0.0
+    regulatory_capital: Optional[float] = 0.0
+    rwa: Optional[float] = 0.0
+    economic_capital: Optional[float] = 0.0
+    ifrs9_stage: Optional[str] = "Stage 1 (Performing)"
+    rating_grade: Optional[str] = "BBB"
+    recommended_spread_bps: Optional[float] = 0.0
+    raroc_pct: Optional[float] = 0.0
+    quant_metrics: Optional[Dict[str, Any]] = None
     
     class Config:
         from_attributes = True
+
+# --- QUANTITATIVE RISK & CAPITAL SCHEMAS ---
+class PortfolioSimulationRequest(BaseModel):
+    num_simulations: int = Field(50000, ge=1000, le=200000, description="Monte Carlo simulation paths")
+
+class StressTestRequest(BaseModel):
+    delta_gdp_pct: float = Field(-2.5, description="GDP shock in percentage points (e.g. -2.5%)")
+    delta_unemployment_pct: float = Field(3.0, description="Unemployment rate increase in percentage points (e.g. +3.0%)")
+    delta_rate_bps: float = Field(150.0, description="Central bank interest rate shock in basis points (e.g. +150 bps)")
+    delta_hpi_pct: float = Field(-12.0, description="House price index shock in percentage points (e.g. -12.0%)")
+
+class LoanPricingRequest(BaseModel):
+    amt_credit: float = Field(..., ge=1000)
+    pd: float = Field(..., ge=0.0001, le=0.999)
+    has_realty: bool = False
+    has_car: bool = False
+    car_age: Optional[float] = None
+    cost_of_funds: float = Field(0.045, ge=0.0, le=0.30)
+    opex_rate: float = Field(0.012, ge=0.0, le=0.10)
+    target_hurdle_rate: float = Field(0.15, ge=0.05, le=0.50)
+
+class LoanPricingResponse(BaseModel):
+    economic_capital: float
+    expected_loss: float
+    recommended_interest_rate_pct: float
+    recommended_spread_bps: float
+    target_hurdle_rate_pct: float
+    current_market_raroc_pct: float
+
+class QuantPortfolioSummaryResponse(BaseModel):
+    total_loans: int
+    total_exposure_ead: float
+    total_expected_loss: float
+    total_rwa: float
+    total_regulatory_capital: float
+    weighted_avg_pd: float
+    weighted_avg_lgd: float
+    ifrs9_staging_distribution: Dict[str, int]
+    rating_distribution: Dict[str, int]
+
 
 # --- DASHBOARD SUMMARY SCHEMAS ---
 class RiskDistribution(BaseModel):

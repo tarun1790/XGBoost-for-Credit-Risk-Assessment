@@ -6,6 +6,7 @@ import DashboardOverview from './pages/DashboardOverview';
 import CustomerDirectory from './pages/CustomerDirectory';
 import RiskAssessmentDetails from './pages/RiskAssessmentDetails';
 import AdminPanel from './pages/AdminPanel';
+import QuantPortfolioStudio from './pages/QuantPortfolioStudio';
 import { 
   Shield, 
   LayoutDashboard, 
@@ -14,7 +15,8 @@ import {
   LogOut, 
   User,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  Activity
 } from 'lucide-react';
 
 // Wrapper for checking Authentication
@@ -48,6 +50,7 @@ const ProtectedRoute = ({ children, requireAnalyst = false, requireAdmin = false
 // Main Navigation Layout Sidebar
 const menuItems = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard, permission: () => true },
+  { name: 'Quant Studio', path: '/quant', icon: Activity, permission: () => true },
   { name: 'Borrowers', path: '/customers', icon: Users, permission: () => true },
   { name: 'System Admin', path: '/admin', icon: UserSquare2, permission: () => true },
 ];
@@ -204,6 +207,16 @@ const App = () => {
               <ProtectedRoute>
                 <Layout>
                   <DashboardOverview />
+                </Layout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/quant" 
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <QuantPortfolioStudio />
                 </Layout>
               </ProtectedRoute>
             } 

@@ -72,6 +72,15 @@ async def assess_credit_risk(
         credit_score=prediction_results["credit_score"],
         risk_category=prediction_results["risk_category"],
         shap_explanations=prediction_results["shap_explanations"],
+        lgd=prediction_results.get("lgd", 0.45),
+        ead=prediction_results.get("ead", 0.0),
+        expected_loss=prediction_results.get("expected_loss", 0.0),
+        regulatory_capital=prediction_results.get("regulatory_capital", 0.0),
+        rwa=prediction_results.get("rwa", 0.0),
+        economic_capital=prediction_results.get("economic_capital", 0.0),
+        ifrs9_stage=prediction_results.get("ifrs9_stage", "Stage 1 (Performing)"),
+        rating_grade=prediction_results.get("rating_grade", "BBB"),
+        quant_metrics=prediction_results.get("quant_metrics"),
         assessed_by=current_user.id
     )
     
@@ -83,7 +92,7 @@ async def assess_credit_risk(
         user_id=current_user.id,
         action="CREDIT_ASSESSMENT",
         details=f"Assessed credit risk for {customer.first_name} {customer.last_name}. "
-                f"Score: {prediction.credit_score} ({prediction.risk_category})."
+                f"Score: {prediction.credit_score} ({prediction.risk_category}) | Grade: {prediction.rating_grade} | EL: ${prediction.expected_loss:,.2f} | RWA: ${prediction.rwa:,.2f}."
     )
     db.add(audit)
     await db.commit()
