@@ -40,7 +40,7 @@ class AuditService:
 
         # 3. Create entry attributes
         log_id = uuid.uuid4()
-        now = datetime.now(timezone.utc)
+        now = datetime.utcnow()
         now_iso = now.isoformat()
 
         # 4. Compute SHA-256 block hash
@@ -103,13 +103,18 @@ class AuditService:
                     "reason": "Previous hash pointer mismatch (broken link)"
                 })
 
+            ts = log.timestamp
+            if hasattr(ts, "tzinfo") and ts.tzinfo is not None:
+                ts = ts.astimezone(timezone.utc).replace(tzinfo=None)
+            ts_iso = ts.isoformat() if hasattr(ts, "isoformat") else str(ts)
+
             # Recompute record hash
             recomputed = compute_audit_hash(
                 log_id=str(log.id),
                 user_id=str(log.user_id) if log.user_id else None,
                 action=log.action,
                 details=log.details,
-                timestamp_iso=log.timestamp.isoformat() if hasattr(log.timestamp, "isoformat") else str(log.timestamp),
+                timestamp_iso=ts_iso,
                 ip_address=log.ip_address,
                 previous_hash=log.previous_hash
             )
