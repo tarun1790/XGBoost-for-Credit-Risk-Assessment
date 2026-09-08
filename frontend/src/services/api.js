@@ -23,16 +23,44 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle token expiry (401 errors)
+// Response interceptor with automatic Refresh Token Rotation (RTR)
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      // Clear credentials and redirect to login
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (refreshToken && !originalRequest.url?.includes('/auth/token') && !originalRequest.url?.includes('/auth/refresh')) {
+        originalRequest._retry = true;
+        try {
+          const res = await axios.post(`${API_BASE_URL}/api/v1/auth/refresh`, {
+            refresh_token: refreshToken
+          });
+          if (res.data && res.data.access_token) {
+            localStorage.setItem('token', res.data.access_token);
+            if (res.data.refresh_token) {
+              localStorage.setItem('refresh_token', res.data.refresh_token);
+            }
+            api.defaults.headers.common['Authorization'] = `Bearer ${res.data.access_token}`;
+            originalRequest.headers['Authorization'] = `Bearer ${res.data.access_token}`;
+            return api(originalRequest);
+          }
+        } catch (refreshErr) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem('user');
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
+          return Promise.reject(refreshErr);
+        }
+      } else {
+        localStorage.removeItem('token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);
@@ -49,7 +77,25 @@ export const authAPI = {
         'Content-Type': 'multipart/form-data',
       },
     });
+    if (response.data.refresh_token) {
+      localStorage.setItem('refresh_token', response.data.refresh_token);
+    }
     return response.data;
+  },
+  refresh: async (refreshToken) => {
+    const response = await api.post('/auth/refresh', { refresh_token: refreshToken });
+    return response.data;
+  },
+  logout: async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (e) {
+      // Ignore network error on logout
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('user');
+    }
   },
   register: async (userData) => {
     const response = await api.post('/auth/register', userData);
@@ -61,6 +107,14 @@ export const authAPI = {
   },
   getAuditLogs: async () => {
     const response = await api.get('/auth/audit');
+    return response.data;
+  },
+  verifyAuditChain: async () => {
+    const response = await api.get('/auth/audit/verify');
+    return response.data;
+  },
+  getSecurityTelemetry: async () => {
+    const response = await api.get('/auth/security-telemetry');
     return response.data;
   },
 };

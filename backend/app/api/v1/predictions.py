@@ -1,20 +1,23 @@
 from typing import List
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 from backend.app.core.db import get_db
+from backend.app.core.rate_limiter import rate_limit_computation
 from backend.app.models.models import Customer, Prediction, User, AuditLog
 from backend.app.models.schemas import PredictionResponse
 from backend.app.services.ml_service import ml_service
+from backend.app.services.audit_service import audit_service
 from backend.app.api.v1.auth import get_current_user, require_viewer, require_analyst
 
 router = APIRouter()
 
-@router.post("/{customer_id}", response_model=PredictionResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/{customer_id}", response_model=PredictionResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(rate_limit_computation)])
 async def assess_credit_risk(
     customer_id: UUID,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_analyst)
 ):
@@ -87,14 +90,15 @@ async def assess_credit_risk(
     db.add(prediction)
     await db.flush()
     
-    # 5. Log audit transaction
-    audit = AuditLog(
-        user_id=current_user.id,
+    # 5. Log audit transaction with cryptographic hash chain
+    await audit_service.create_log(
+        db=db,
         action="CREDIT_ASSESSMENT",
         details=f"Assessed credit risk for {customer.first_name} {customer.last_name}. "
-                f"Score: {prediction.credit_score} ({prediction.risk_category}) | Grade: {prediction.rating_grade} | EL: ${prediction.expected_loss:,.2f} | RWA: ${prediction.rwa:,.2f}."
+                f"Score: {prediction.credit_score} ({prediction.risk_category}) | Grade: {prediction.rating_grade} | EL: ${prediction.expected_loss:,.2f} | RWA: ${prediction.rwa:,.2f}.",
+        user_id=current_user.id,
+        request=request
     )
-    db.add(audit)
     await db.commit()
     
     # Load relationships for response schema serialization

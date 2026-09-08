@@ -22,9 +22,14 @@ class UserResponse(UserBase):
 
 class Token(BaseModel):
     access_token: str
+    refresh_token: Optional[str] = None
     token_type: str
     role: str
     username: str
+    expires_in: int = 900 # 15 minutes in seconds
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
 
 class TokenData(BaseModel):
     username: Optional[str] = None
@@ -167,10 +172,30 @@ class DashboardSummary(BaseModel):
 class AuditLogResponse(BaseModel):
     id: UUID
     user_id: Optional[UUID]
-    username: Optional[str]
+    username: Optional[str] = None
     action: str
     details: str
+    ip_address: Optional[str] = "127.0.0.1"
+    user_agent: Optional[str] = None
+    previous_hash: Optional[str] = None
+    record_hash: Optional[str] = None
     timestamp: datetime
     
     class Config:
         from_attributes = True
+
+class AuditVerifyResponse(BaseModel):
+    is_valid: bool
+    status: str
+    total_records: int
+    tampered_count: int
+    tampered_records: List[Dict[str, Any]]
+
+class SecurityTelemetryResponse(BaseModel):
+    active_locked_accounts: int
+    accounts_with_failed_attempts: int
+    jwt_access_expiry_minutes: int
+    refresh_token_rotation_enabled: bool
+    audit_blockchain_active: bool
+    rate_limiting_active: bool
+

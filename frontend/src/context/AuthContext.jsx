@@ -45,11 +45,18 @@ export const AuthProvider = ({ children }) => {
     return await authAPI.register(userData);
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setToken(null);
-    setUser(null);
+  const logout = async () => {
+    try {
+      await authAPI.logout();
+    } catch (e) {
+      // Ignore network error on logout
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('user');
+      setToken(null);
+      setUser(null);
+    }
   };
 
   const isAdmin = () => user?.role === 'ADMIN';

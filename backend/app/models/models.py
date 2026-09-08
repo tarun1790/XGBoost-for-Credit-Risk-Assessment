@@ -92,6 +92,10 @@ class AuditLog(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
     action = Column(String, nullable=False)
     details = Column(String, nullable=False)
+    ip_address = Column(String, nullable=True, default="127.0.0.1")
+    user_agent = Column(String, nullable=True)
+    previous_hash = Column(String, nullable=True, default="0" * 64)
+    record_hash = Column(String, nullable=True)
     timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     
     # Relationships
